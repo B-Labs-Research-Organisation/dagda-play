@@ -1,8 +1,8 @@
-# 🏰 Dagda Games - Farcaster Mini App
+# 🏰 Dagda Play - Web & Farcaster Mini App
 
 A blockchain-powered gaming mini app for Farcaster. Play Coinflip & Randomizer games, earn PIE tokens, and compete with friends on the decentralized social network!
 
-![Dagda Games](https://img.shields.io/badge/Farcaster-Mini%20App-blue)
+![Dagda Play](https://img.shields.io/badge/Farcaster-Mini%20App-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -28,8 +28,8 @@ A blockchain-powered gaming mini app for Farcaster. Play Coinflip & Randomizer g
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/dagda-games.git
-cd dagda-games
+git clone https://github.com/yourusername/dagda-play.git
+cd dagda-play
 ```
 
 2. **Install dependencies:**
@@ -72,7 +72,7 @@ npm run dev
 ## 🔗 Farcaster Integration
 
 ### As a Website
-Dagda Games works as a standalone web application with full wallet integration.
+Dagda Play works as a standalone web application with full wallet integration.
 
 ### As a Farcaster Mini App
 1. **Deploy** your app to a public URL (Vercel, Railway, etc.)
@@ -129,7 +129,7 @@ npm start
 ## 🏗️ Project Structure
 
 ```
-dagda-games/
+dagda-play/
 ├── 📁 public/              # Static assets
 ├── 📁 src/
 │   ├── 📁 app/            # Next.js 15 app router
