@@ -1,0 +1,235 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { useAccount } from 'wagmi'
+import { CoinflipGame } from '@/components/games/CoinflipGame'
+import { RandomizerGame } from '@/components/games/RandomizerGame'
+import { BalanceManager } from '@/lib/BalanceManager'
+import { LimitManager } from '@/lib/LimitManager'
+import { FarcasterAuth } from '@/components/auth/FarcasterAuth'
+
+type GameType = 'coinflip' | 'randomizer' | null
+
+export default function Home() {
+  const { address, isConnected } = useAccount()
+  const [currentGame, setCurrentGame] = useState<GameType>(null)
+  const [balance, setBalance] = useState(15) // Starting balance
+  const [dailyLimits, setDailyLimits] = useState({
+    coinflip: { remaining: 3, resetsIn: '24h 0m' },
+    randomizer: { remaining: 3, resetsIn: '24h 0m' }
+  })
+  const [isFarcasterUser, setIsFarcasterUser] = useState(false)
+  const [farcasterProfile, setFarcasterProfile] = useState<{ fid?: number; username?: string; displayName?: string } | null>(null)
+
+  const balanceManager = new BalanceManager()
+  const limitManager = new LimitManager()
+
+  const loadUserData = useCallback(async () => {
+    if (!address) return
+
+    try {
+      // Use wallet address as user ID
+      const userId = address.toLowerCase()
+      const username = `Player_${address.slice(0, 6)}`
+
+      const userBalance = await balanceManager.getBalance(userId, username)
+      setBalance(userBalance)
+
+      const coinflipLimit = await limitManager.checkLimit(userId, username, 'coinflip')
+      const randomizerLimit = await limitManager.checkLimit(userId, username, 'randomizer')
+
+      setDailyLimits({
+        coinflip: { remaining: coinflipLimit.playsRemaining, resetsIn: coinflipLimit.resetsIn },
+        randomizer: { remaining: randomizerLimit.playsRemaining, resetsIn: randomizerLimit.resetsIn }
+      })
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    }
+  }, [address])
+
+  useEffect(() => {
+    if (isConnected && address) {
+      // Load user balance and limits
+      loadUserData()
+    }
+  }, [isConnected, address, loadUserData])
+
+  const handleFarcasterAuth = (profile: { fid: number; username: string; displayName: string }) => {
+    console.log('Farcaster auth successful:', profile)
+    setIsFarcasterUser(true)
+    setFarcasterProfile(profile)
+
+    // Apply Farcaster incentives
+    applyFarcasterIncentives()
+  }
+
+  const applyFarcasterIncentives = async () => {
+    if (!address) return
+
+    try {
+      const userId = address.toLowerCase()
+      const username = farcasterProfile?.username || `Player_${address.slice(0, 6)}`
+
+      // Give Farcaster users bonus PIE
+      const currentBalance = await balanceManager.getBalance(userId, username)
+      if (currentBalance === 15) { // Only if it's the starting balance
+        await balanceManager.updateBalance(userId, username, 5) // +5 bonus PIE
+        setBalance(20) // Update local state
+      }
+
+      // Update limits for Farcaster users (5 plays instead of 3)
+      setDailyLimits({
+        coinflip: { remaining: 5, resetsIn: '24h 0m' },
+        randomizer: { remaining: 5, resetsIn: '24h 0m' }
+      })
+    } catch (error) {
+      console.error('Error applying Farcaster incentives:', error)
+    }
+  }
+
+  const handleGameComplete = async () => {
+    // Refresh user data after game completion
+    await loadUserData()
+    setCurrentGame(null)
+  }
+
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-8 bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 max-w-md">
+          <h2 className="text-3xl font-bold text-green-100 mb-6">🏰 Welcome to Dagda Play</h2>
+          <p className="text-green-200 mb-8">Connect your wallet to start playing!</p>
+
+          {/* Farcaster Auth Option */}
+          <div className="mb-6">
+            <FarcasterAuth onAuth={handleFarcasterAuth} />
+          </div>
+
+          <div className="text-sm text-green-300 space-y-2">
+            <p>🎮 Play games • 🪙 Earn PIE tokens • 🏆 Collect achievements</p>
+            <p className="text-yellow-400 font-semibold">
+              ✨ Farcaster users get +5 bonus PIE and 5 plays/day!
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (currentGame === 'coinflip') {
+    return <CoinflipGame onComplete={handleGameComplete} balance={balance} />
+  }
+
+  if (currentGame === 'randomizer') {
+    return <RandomizerGame onComplete={handleGameComplete} balance={balance} />
+  }
+
+  return (
+    <div className="min-h-screen p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Welcome Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-green-100 mb-4">
+            🏰 Welcome to Dagda Play
+          </h1>
+          <p className="text-xl text-green-200">
+            The Irish God of Games awaits your challenge!
+          </p>
+        </div>
+
+        {/* User Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6 text-center">
+            <div className="text-3xl font-bold text-green-100 mb-2">💰 {balance}</div>
+            <div className="text-green-300">PIE Balance</div>
+          </div>
+
+          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6 text-center">
+            <div className="text-3xl font-bold text-green-100 mb-2">
+              🪙 {dailyLimits.coinflip.remaining}
+            </div>
+            <div className="text-green-300">Coinflip Plays Left</div>
+            <div className="text-xs text-green-400 mt-1">
+              Resets in: {dailyLimits.coinflip.resetsIn}
+            </div>
+          </div>
+
+          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6 text-center">
+            <div className="text-3xl font-bold text-green-100 mb-2">
+              🎲 {dailyLimits.randomizer.remaining}
+            </div>
+            <div className="text-green-300">Randomizer Plays Left</div>
+            <div className="text-xs text-green-400 mt-1">
+              Resets in: {dailyLimits.randomizer.resetsIn}
+            </div>
+          </div>
+        </div>
+
+        {/* Game Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Coinflip Game */}
+          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-8 text-center hover:border-green-500/50 transition-colors">
+            <div className="text-6xl mb-4">🪙</div>
+            <h2 className="text-2xl font-bold text-green-100 mb-4">Coinflip</h2>
+            <p className="text-green-200 mb-6">
+              Bet 5 PIE and guess heads or tails. Win 10 PIE if you're correct!
+            </p>
+            <button
+              onClick={() => setCurrentGame('coinflip')}
+              disabled={dailyLimits.coinflip.remaining === 0}
+              className="w-full py-4 px-8 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none"
+            >
+              {dailyLimits.coinflip.remaining === 0 ? 'Daily Limit Reached' : 'Play Coinflip'}
+            </button>
+          </div>
+
+          {/* Randomizer Game */}
+          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-8 text-center hover:border-green-500/50 transition-colors">
+            <div className="text-6xl mb-4">🎲</div>
+            <h2 className="text-2xl font-bold text-green-100 mb-4">Randomizer</h2>
+            <p className="text-green-200 mb-6">
+              Try your luck! Win up to 10 PIE or lose up to 10 PIE in this thrilling game of chance.
+            </p>
+            <button
+              onClick={() => setCurrentGame('randomizer')}
+              disabled={dailyLimits.randomizer.remaining === 0}
+              className="w-full py-4 px-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none"
+            >
+              {dailyLimits.randomizer.remaining === 0 ? 'Daily Limit Reached' : 'Play Randomizer'}
+            </button>
+          </div>
+        </div>
+
+        {/* Blockchain Features Preview */}
+        <div className="mt-16 text-center">
+          <h3 className="text-2xl font-bold text-green-100 mb-8">🔗 Coming Soon: Blockchain Features</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6">
+              <div className="text-3xl mb-3">🏆</div>
+              <h4 className="text-lg font-bold text-green-100 mb-2">Achievement NFTs</h4>
+              <p className="text-green-300 text-sm">
+                Earn unique NFTs for your gaming milestones and achievements
+              </p>
+            </div>
+
+            <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6">
+              <div className="text-3xl mb-3">💎</div>
+              <h4 className="text-lg font-bold text-green-100 mb-2">PIE Token</h4>
+              <p className="text-green-300 text-sm">
+                Cash out your PIE earnings to your wallet as ERC-20 tokens
+              </p>
+            </div>
+
+            <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6">
+              <div className="text-3xl mb-3">🏅</div>
+              <h4 className="text-lg font-bold text-green-100 mb-2">Leaderboards</h4>
+              <p className="text-green-300 text-sm">
+                Compete with other players on the global leaderboard
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
