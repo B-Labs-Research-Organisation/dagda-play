@@ -8,28 +8,23 @@ interface FarcasterProviderProps {
 }
 
 export function FarcasterProvider({ children }: FarcasterProviderProps) {
-  const [isReady, setIsReady] = useState(false)
   const [context, setContext] = useState<any>(null)
 
   useEffect(() => {
     const initializeFarcaster = async () => {
-      try {
-        // Add the frame to the user's client
-        const context = await sdk.context
-        setContext(context)
-        
-        console.log('Farcaster context:', context)
+      // Call ready() IMMEDIATELY - this is critical for Farcaster miniapps
+      // Don't wait for anything before calling this
+      sdk.actions.ready()
+      
+      console.log('Farcaster ready() called')
 
-        // Signal to the frame that it's ready
-        sdk.actions.ready()
-        setIsReady(true)
-        
-        console.log('Farcaster Mini App initialized successfully')
+      try {
+        // Fetch context after calling ready()
+        const farcasterContext = await sdk.context
+        setContext(farcasterContext)
+        console.log('Farcaster context loaded:', farcasterContext)
       } catch (error) {
-        console.error('Error initializing Farcaster:', error)
-        // Even on error, call ready to dismiss the splash screen
-        sdk.actions.ready()
-        setIsReady(true)
+        console.error('Error fetching Farcaster context:', error)
         setContext({ error: error instanceof Error ? error.message : 'Unknown error' })
       }
     }
@@ -37,30 +32,20 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
     initializeFarcaster()
   }, [])
 
-  // Show loading while initializing
-  if (!isReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-900 via-green-800 to-emerald-900">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🏰</div>
-          <div className="text-2xl font-bold text-green-100 mb-2">Loading Dagda Play</div>
-          <div className="text-green-200">Initializing...</div>
-        </div>
-      </div>
-    )
-  }
-
+  // Don't block rendering - let the app load immediately
   return (
     <>
       {children}
       {/* Make context available globally */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.farcasterContext = ${JSON.stringify(context)};
-          `
-        }}
-      />
+      {context && (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.farcasterContext = ${JSON.stringify(context)};
+            `
+          }}
+        />
+      )}
     </>
   )
 }
