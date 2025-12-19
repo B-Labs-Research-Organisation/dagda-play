@@ -34,14 +34,14 @@ export function WalletProvider({ children }: WalletProviderProps) {
               </div>
             ) : (
               <div className="flex gap-2">
-                {connectors.slice(0, 2).map((connector) => (
+                {connectors.slice(0, 1).map((connector) => (
                   <button
                     key={connector.id}
                     onClick={() => connect({ connector })}
                     disabled={isPending}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white rounded-lg transition-colors"
                   >
-                    {isPending ? 'Connecting...' : `Connect ${connector.name}`}
+                    {isPending ? 'Connecting...' : 'Connect Wallet'}
                   </button>
                 ))}
               </div>
