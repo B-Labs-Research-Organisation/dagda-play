@@ -11,15 +11,12 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
   const [context, setContext] = useState<any>(null)
 
   useEffect(() => {
-    const initializeFarcaster = async () => {
-      // Call ready() IMMEDIATELY - this is critical for Farcaster miniapps
-      // Don't wait for anything before calling this
-      sdk.actions.ready()
-      
-      console.log('Farcaster ready() called')
+    // Call ready() IMMEDIATELY and synchronously
+    sdk.actions.ready()
+    console.log('Farcaster ready() called synchronously')
 
+    const loadContext = async () => {
       try {
-        // Fetch context after calling ready()
         const farcasterContext = await sdk.context
         setContext(farcasterContext)
         console.log('Farcaster context loaded:', farcasterContext)
@@ -29,7 +26,7 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
       }
     }
 
-    initializeFarcaster()
+    loadContext()
   }, [])
 
   // Don't block rendering - let the app load immediately

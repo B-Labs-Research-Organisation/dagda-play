@@ -16,14 +16,14 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <FarcasterProvider>
+    <FarcasterProvider>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
           <WalletProvider>
             {children}
           </WalletProvider>
-        </FarcasterProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </FarcasterProvider>
   )
 }
