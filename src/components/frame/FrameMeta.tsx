@@ -7,20 +7,8 @@ export function FrameMeta() {
   const pathname = usePathname()
 
   useEffect(() => {
-    // Update frame metadata based on current page
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-
-    if (pathname === '/' || pathname === '') {
-      // Home page frame metadata
-      updateFrameMeta({
-        image: `${baseUrl}/frame-image.png`,
-        buttons: [
-          { text: '🎮 Play Coinflip', action: 'post', target: `${baseUrl}/api/frame/coinflip` },
-          { text: '🎲 Play Randomizer', action: 'post', target: `${baseUrl}/api/frame/randomizer` },
-          { text: '🏆 Leaderboard', action: 'post', target: `${baseUrl}/api/frame/leaderboard` }
-        ]
-      })
-    }
+    // FrameMeta is currently disabled for Farcaster v2 support
+    // v2 uses static manifest and layout-based metadata
   }, [pathname])
 
   return null

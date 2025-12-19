@@ -15,7 +15,6 @@ export async function GET() {
       imageUrl: "https://dagda-play.vercel.app/preview.png",
       splashImageUrl: "https://dagda-play.vercel.app/splash.png",
       splashBackgroundColor: "#ffffff",
-      buttonTitle: "Launch App"
     }
   };
 

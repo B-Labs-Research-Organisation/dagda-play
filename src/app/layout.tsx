@@ -41,28 +41,18 @@ export const metadata: Metadata = {
   other: {
     "fc:frame": JSON.stringify({
       version: "next",
-      imageUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/frame-image.png`,
+      imageUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/preview.png`,
       button: {
-        title: "Play Dagda Play",
+        title: "Launch App",
         action: {
           type: "launch_frame",
           name: "Dagda Play",
           url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}`,
-          splashImageUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/splash-image.png`,
-          splashBackgroundColor: "#1f2937",
+          splashImageUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/splash.png`,
+          splashBackgroundColor: "#ffffff",
         },
       },
     }),
-    "fc:frame:image": `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/frame-image.png`,
-    "fc:frame:button:1": "🎮 Play Coinflip",
-    "fc:frame:button:1:action": "post",
-    "fc:frame:button:1:target": `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/frame/coinflip`,
-    "fc:frame:button:2": "🎲 Play Randomizer",
-    "fc:frame:button:2:action": "post",
-    "fc:frame:button:2:target": `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/frame/randomizer`,
-    "fc:frame:button:3": "🏆 View Leaderboard",
-    "fc:frame:button:3:action": "post",
-    "fc:frame:button:3:target": `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/frame/leaderboard`,
   },
 };
 
