@@ -14,28 +14,52 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
     // Check if we're in a mini app context
     const checkContext = () => {
       if (typeof window !== 'undefined') {
+        // Check for mini app context first
         const miniApp = (window as any).isFarcasterMiniApp
-        setIsMiniApp(miniApp)
+        const farcasterContext = (window as any).farcasterContext
 
-        // If we're in a mini app, user is already authenticated
-        if (miniApp && (window as any).farcasterContext) {
-          const context = (window as any).farcasterContext
-          console.log('Mini app context found:', context)
+        console.log('Context check:', { miniApp, farcasterContext })
 
-          if (context.user) {
-            onAuth({
-              fid: context.user.fid || context.user.id || 1,
-              username: context.user.username || context.user.name || 'miniapp-user',
-              displayName: context.user.displayName || context.user.username || context.user.name || 'Mini App User'
-            })
-          }
-        } else {
-          console.log('Not in mini app context, will use OAuth flow')
+        if (miniApp && farcasterContext?.user) {
+          console.log('Mini app context found with user:', farcasterContext.user)
+          setIsMiniApp(true)
+          onAuth({
+            fid: farcasterContext.user.fid || farcasterContext.user.id || 1,
+            username: farcasterContext.user.username || farcasterContext.user.name || 'miniapp-user',
+            displayName: farcasterContext.user.displayName || farcasterContext.user.username || farcasterContext.user.name || 'Mini App User'
+          })
+          return
         }
+
+        // Check if we're in an iframe (likely preview tool)
+        const isInIframe = window.self !== window.top
+        console.log('Is in iframe:', isInIframe)
+
+        if (isInIframe) {
+          // For preview tool, simulate authentication after a delay
+          console.log('In iframe context (preview tool), simulating authentication')
+          setTimeout(() => {
+            setIsMiniApp(true)
+            onAuth({
+              fid: 99999,
+              username: 'preview-user',
+              displayName: 'Preview User'
+            })
+          }, 1000)
+          return
+        }
+
+        // Web context - use OAuth
+        console.log('Web context detected, will use OAuth flow')
+        setIsMiniApp(false)
       }
     }
 
     checkContext()
+
+    // Also check after a delay to ensure SDK has loaded
+    const timeoutId = setTimeout(checkContext, 2000)
+    return () => clearTimeout(timeoutId)
   }, [onAuth])
 
   const handleFarcasterAuth = async () => {
