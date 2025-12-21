@@ -63,7 +63,7 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
   }, [onAuth])
 
   const handleFarcasterAuth = async () => {
-    console.log('Starting Farcaster authentication...')
+    console.log('Opening Farcaster mini app...')
     setIsAuthenticating(true)
 
     try {
@@ -77,26 +77,15 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
         return
       }
 
-      // For web apps, try to open Farcaster auth
-      console.log('In web context - attempting OAuth flow')
+      // For web access, direct to Farcaster web app
+      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app').replace(/\/$/, '')
+      const farcasterWebUrl = `https://warpcast.com/~/frames/frame?url=${encodeURIComponent(baseUrl)}`
+      console.log('Farcaster web URL:', farcasterWebUrl)
 
-      // For web access, direct to Farcaster cast URL
-      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app').replace(/\/$/, '') // Remove trailing slash
-      const castUrl = `https://warpcast.com/cast?url=${encodeURIComponent(baseUrl)}`
-      console.log('Cast URL:', castUrl)
+      // Open Farcaster web app in new tab
+      window.open(farcasterWebUrl, '_blank')
 
-      // Try to open in Farcaster app first, fallback to web
-      const farcasterUrl = `farcaster://cast?url=${encodeURIComponent(baseUrl)}`
-
-      // Check if we can open the Farcaster app
-      const opened = window.open(farcasterUrl, '_blank')
-
-      // If Farcaster app didn't open, try web URL
-      if (!opened) {
-        window.open(castUrl, '_blank')
-      }
-
-      // Simulate authentication success after opening Farcaster
+      // Simulate successful connection (user will be authenticated in Farcaster)
       setTimeout(() => {
         onAuth({
           fid: 12345,
@@ -107,8 +96,8 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
       }, 2000)
 
     } catch (error) {
-      console.error('Farcaster authentication failed:', error)
-      alert(`Farcaster authentication failed: ${error}`)
+      console.error('Farcaster connection failed:', error)
+      alert(`Failed to open Farcaster: ${error}`)
       setIsAuthenticating(false)
     }
   }
@@ -138,12 +127,12 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
         {isAuthenticating ? (
           <>
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            Connecting to Farcaster...
+            Opening Farcaster...
           </>
         ) : (
           <>
             <span className="text-xl">🟣</span>
-            Sign in with Farcaster
+            Open in Farcaster
           </>
         )}
       </button>
