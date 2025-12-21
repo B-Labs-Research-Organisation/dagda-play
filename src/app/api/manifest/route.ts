@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app';
+  
   const manifest = {
     accountAssociation: {
       header: "eyJmaWQiOjM0ODA0OCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDM1OTA4MzYwMzk1OTgxRjE0MzIyOUJBMjkyMDk2M2U4MTc5MDg0OWEifQ",
@@ -10,11 +12,11 @@ export async function GET() {
     frame: {
       version: "1",
       name: "Dagda Play",
-      iconUrl: "https://dagda-play.vercel.app/icon.png",
-      homeUrl: "https://dagda-play.vercel.app",
-      imageUrl: "https://dagda-play.vercel.app/preview.png",
-      splashImageUrl: "https://dagda-play.vercel.app/splash.png",
-      splashBackgroundColor: "#ffffff",
+      iconUrl: `${baseUrl}/icon.svg`,
+      homeUrl: baseUrl,
+      imageUrl: `${baseUrl}/preview.svg`,
+      splashImageUrl: `${baseUrl}/splash.svg`,
+      splashBackgroundColor: "#10b981",
     }
   };
 

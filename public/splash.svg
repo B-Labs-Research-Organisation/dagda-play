@@ -1,0 +1,6 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#10b981"/>
+  <circle cx="400" cy="250" r="80" fill="white" opacity="0.2"/>
+  <text x="400" y="280" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">Dagda Play</text>
+  <text x="400" y="340" font-family="Arial, sans-serif" font-size="28" fill="#f0fdf4" text-anchor="middle">Loading your gaming experience...</text>
+</svg>
