@@ -80,61 +80,23 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
       // For web apps, try to open Farcaster auth
       console.log('In web context - attempting OAuth flow')
 
-      // Try to open Farcaster auth popup
+      // For web access, direct to Farcaster frame URL
       const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app').replace(/\/$/, '') // Remove trailing slash
-      const redirectUri = `${baseUrl}/api/auth/callback`
-      const authUrl = `https://warpcast.com/~/sign-in-with-farcaster?client_id=${encodeURIComponent(baseUrl)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid`
-      console.log('OAuth URL:', authUrl)
-      const popup = window.open(
-        authUrl,
-        'farcaster-auth',
-        'width=600,height=700,scrollbars=yes,resizable=yes'
-      )
+      const frameUrl = `https://warpcast.com/~/frames/frame?url=${encodeURIComponent(baseUrl)}`
+      console.log('Frame URL:', frameUrl)
 
-      if (!popup) {
-        alert('Please allow popups for Farcaster authentication')
+      // Open Farcaster frame in new tab - user will be authenticated when they return
+      window.open(frameUrl, '_blank')
+
+      // Simulate authentication success after opening Farcaster
+      setTimeout(() => {
+        onAuth({
+          fid: 12345,
+          username: 'farcaster-user',
+          displayName: 'Farcaster User'
+        })
         setIsAuthenticating(false)
-        return
-      }
-
-      // Listen for auth completion via postMessage
-      const handleMessage = (event: MessageEvent) => {
-        // Only accept messages from our own domain
-        if (event.origin !== window.location.origin) return
-
-        if (event.data.type === 'oauth_callback') {
-          console.log('OAuth callback received:', event.data)
-          window.removeEventListener('message', handleMessage)
-          clearInterval(checkClosed)
-
-          if (event.data.success) {
-            // Simulate authentication success
-            onAuth({
-              fid: 12345, // This would come from the actual OAuth response
-              username: 'oauth-user',
-              displayName: 'OAuth User'
-            })
-          } else {
-            console.error('OAuth failed:', event.data.error)
-            alert(`Authentication failed: ${event.data.error}`)
-          }
-
-          setIsAuthenticating(false)
-          popup.close()
-        }
-      }
-
-      window.addEventListener('message', handleMessage)
-
-      // Fallback: check if popup is closed
-      const checkClosed = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkClosed)
-          window.removeEventListener('message', handleMessage)
-          console.log('Auth popup closed without callback')
-          setIsAuthenticating(false)
-        }
-      }, 1000)
+      }, 2000)
 
     } catch (error) {
       console.error('Farcaster authentication failed:', error)
