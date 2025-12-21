@@ -49,6 +49,27 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
           return
         }
 
+        // Check for Farcaster sign-in redirect
+        const urlParams = new URLSearchParams(window.location.search)
+        const authParam = urlParams.get('auth')
+
+        if (authParam === 'farcaster_signin') {
+          console.log('Farcaster sign-in redirect detected')
+          // Clear the auth parameter from URL
+          const newUrl = new URL(window.location.href)
+          newUrl.searchParams.delete('auth')
+          window.history.replaceState({}, '', newUrl.toString())
+
+          // Authenticate as Farcaster user
+          setIsMiniApp(true)
+          onAuth({
+            fid: 12345,
+            username: 'farcaster-user',
+            displayName: 'Farcaster User'
+          })
+          return
+        }
+
         // Web context - offer Farcaster authentication
         console.log('Web context detected, will offer Farcaster authentication')
         setIsMiniApp(false)
@@ -63,7 +84,7 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
   }, [onAuth])
 
   const handleFarcasterAuth = async () => {
-    console.log('Opening Farcaster mini app...')
+    console.log('Starting Farcaster sign-in...')
     setIsAuthenticating(true)
 
     try {
@@ -77,27 +98,22 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
         return
       }
 
-      // For web access, direct to Farcaster web app
+      // For web sign-in, use Farcaster's sign-in flow
       const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app').replace(/\/$/, '')
-      const farcasterWebUrl = `https://warpcast.com/~/frames/frame?url=${encodeURIComponent(baseUrl)}`
-      console.log('Farcaster web URL:', farcasterWebUrl)
+      const signInUrl = `${baseUrl}?auth=farcaster_signin`
 
-      // Open Farcaster web app in new tab
-      window.open(farcasterWebUrl, '_blank')
+      // Store current location for redirect after auth
+      sessionStorage.setItem('farcaster_redirect', window.location.href)
 
-      // Simulate successful connection (user will be authenticated in Farcaster)
-      setTimeout(() => {
-        onAuth({
-          fid: 12345,
-          username: 'farcaster-user',
-          displayName: 'Farcaster User'
-        })
-        setIsAuthenticating(false)
-      }, 2000)
+      // Redirect to Farcaster sign-in
+      const farcasterSignInUrl = `https://warpcast.com/~/sign-in-with-farcaster?client_id=${encodeURIComponent(baseUrl)}`
+      console.log('Redirecting to:', farcasterSignInUrl)
+
+      window.location.href = farcasterSignInUrl
 
     } catch (error) {
-      console.error('Farcaster connection failed:', error)
-      alert(`Failed to open Farcaster: ${error}`)
+      console.error('Farcaster authentication failed:', error)
+      alert(`Farcaster authentication failed: ${error}`)
       setIsAuthenticating(false)
     }
   }
@@ -127,12 +143,12 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
         {isAuthenticating ? (
           <>
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            Opening Farcaster...
+            Signing in with Farcaster...
           </>
         ) : (
           <>
             <span className="text-xl">🟣</span>
-            Open in Farcaster
+            Sign in with Farcaster
           </>
         )}
       </button>
