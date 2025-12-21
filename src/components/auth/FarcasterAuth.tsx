@@ -49,8 +49,8 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
           return
         }
 
-        // Web context - use OAuth
-        console.log('Web context detected, will use OAuth flow')
+        // Web context - offer Farcaster authentication
+        console.log('Web context detected, will offer Farcaster authentication')
         setIsMiniApp(false)
       }
     }
@@ -80,13 +80,21 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
       // For web apps, try to open Farcaster auth
       console.log('In web context - attempting OAuth flow')
 
-      // For web access, direct to Farcaster frame URL
+      // For web access, direct to Farcaster cast URL
       const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app').replace(/\/$/, '') // Remove trailing slash
-      const frameUrl = `https://warpcast.com/~/frames/frame?url=${encodeURIComponent(baseUrl)}`
-      console.log('Frame URL:', frameUrl)
+      const castUrl = `https://warpcast.com/cast?url=${encodeURIComponent(baseUrl)}`
+      console.log('Cast URL:', castUrl)
 
-      // Open Farcaster frame in new tab - user will be authenticated when they return
-      window.open(frameUrl, '_blank')
+      // Try to open in Farcaster app first, fallback to web
+      const farcasterUrl = `farcaster://cast?url=${encodeURIComponent(baseUrl)}`
+
+      // Check if we can open the Farcaster app
+      const opened = window.open(farcasterUrl, '_blank')
+
+      // If Farcaster app didn't open, try web URL
+      if (!opened) {
+        window.open(castUrl, '_blank')
+      }
 
       // Simulate authentication success after opening Farcaster
       setTimeout(() => {
