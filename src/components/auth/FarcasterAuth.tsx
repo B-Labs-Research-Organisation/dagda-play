@@ -57,7 +57,7 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
       console.log('In web context - attempting OAuth flow')
 
       // Try to open Farcaster auth popup
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app'
+      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app').replace(/\/$/, '') // Remove trailing slash
       const authUrl = `https://warpcast.com/~/sign-in-with-farcaster?client_id=${encodeURIComponent(baseUrl)}`
       console.log('OAuth URL:', authUrl)
       const popup = window.open(
