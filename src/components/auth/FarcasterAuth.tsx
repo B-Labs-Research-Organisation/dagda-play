@@ -29,6 +29,8 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
               displayName: context.user.displayName || context.user.username || context.user.name || 'Mini App User'
             })
           }
+        } else {
+          console.log('Not in mini app context, will use OAuth flow')
         }
       }
     }
@@ -55,7 +57,8 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
       console.log('In web context - attempting OAuth flow')
 
       // Try to open Farcaster auth popup
-      const authUrl = `https://warpcast.com/~/sign-in-with-farcaster?client_id=${process.env.NEXT_PUBLIC_FARCASTER_APP_URL || 'http://localhost:3000'}`
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app'
+      const authUrl = `https://warpcast.com/~/sign-in-with-farcaster?client_id=${baseUrl}`
       const popup = window.open(
         authUrl,
         'farcaster-auth',
