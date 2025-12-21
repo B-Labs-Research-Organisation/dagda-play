@@ -72,36 +72,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <FrameMeta />
-        {/* Script to call Farcaster ready() as early as possible */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                // Call ready immediately if the Farcaster SDK is already available
-                if (window.farcaster && window.farcaster.actions && window.farcaster.actions.ready) {
-                  console.log('Early Farcaster ready() call');
-                  window.farcaster.actions.ready();
-                  window.farcasterEarlyReady = true;
-                }
-                
-                // Also set up a listener for when the SDK becomes available
-                let sdkCheckInterval = setInterval(function() {
-                  if (window.farcaster && window.farcaster.actions && window.farcaster.actions.ready) {
-                    console.log('Late Farcaster ready() call (via interval)');
-                    window.farcaster.actions.ready();
-                    window.farcasterLateReady = true;
-                    clearInterval(sdkCheckInterval);
-                  }
-                }, 100);
-                
-                // Stop checking after 5 seconds
-                setTimeout(function() {
-                  clearInterval(sdkCheckInterval);
-                }, 5000);
-              })();
-            `,
-          }}
-        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 min-h-screen`}

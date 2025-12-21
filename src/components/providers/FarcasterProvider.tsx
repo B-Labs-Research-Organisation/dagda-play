@@ -16,59 +16,38 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
     // Only run in browser
     if (typeof window === 'undefined') return
 
-    // Check if ready() was already called by the inline script
-    if ((window as any).farcasterEarlyReady) {
-      console.log('✅ ready() was already called by inline script')
-      setReadyCalled(true)
-      setSdkLoaded(true)
-    }
+    // Dynamically import the SDK to avoid SSR issues
+    import('@farcaster/miniapp-sdk')
+      .then((module) => {
+        const sdk = module.default
+        
+        console.log('Farcaster SDK loaded, calling ready()...')
+        
+        // Call ready() immediately - this is the critical call
+        sdk.actions.ready()
+        setReadyCalled(true)
+        setSdkLoaded(true)
+        console.log('✅ sdk.actions.ready() called successfully')
 
-    let sdk: any = null
-
-    // Try to get the SDK - prioritize window.farcaster (injected by Farcaster client)
-    if ((window as any).farcaster) {
-      console.log('Using window.farcaster (injected by Farcaster client)')
-      sdk = (window as any).farcaster
-      
-      // Call ready() if not already called
-      if (!((window as any).farcasterEarlyReady) && sdk.actions?.ready) {
-        try {
-          console.log('Calling sdk.actions.ready() from FarcasterProvider...')
-          sdk.actions.ready()
-          setReadyCalled(true)
-          setSdkLoaded(true)
-          console.log('✅ Farcaster ready() called successfully')
-        } catch (readyError) {
-          console.error('❌ Error calling ready():', readyError)
-          setError(`Ready Error: ${readyError instanceof Error ? readyError.message : 'Unknown'}`)
-        }
-      }
-    } else {
-      // Not in Farcaster context - this is a regular webapp
-      console.log('Not in Farcaster context - running as regular webapp')
-      setSdkLoaded(false)
-      setContext({ mode: 'webapp', message: 'Running as standard web application' })
-      return
-    }
-
-    // Load context asynchronously (after ready() is already called)
-    if (sdk) {
-      const loadContext = async () => {
-        try {
-          const farcasterContext = await sdk.context
-          setContext(farcasterContext)
-          console.log('Farcaster context loaded:', farcasterContext)
-        } catch (contextError) {
-          console.error('Error loading Farcaster context:', contextError)
-          setContext({ 
-            error: contextError instanceof Error ? contextError.message : 'Unknown error',
-            warning: 'Context not available, but ready() was called'
+        // Load context asynchronously
+        sdk.context
+          .then((ctx: any) => {
+            setContext(ctx)
+            console.log('Farcaster context loaded:', ctx)
           })
-        }
-      }
-
-      loadContext()
-    }
+          .catch((err: any) => {
+            console.warn('Context not available:', err)
+            setContext({ 
+              mode: 'loaded', 
+              warning: 'Context not available but ready() was called' 
+            })
+          })
+      })
+      .catch((err) => {
+        // SDK not available - running as regular webapp
+        console.log('Farcaster SDK not available - running as regular webapp')
+        setContext({ mode: 'webapp', message: 'Running as standard web application' })
+      })
   }, [])
 
   // Don't block rendering - let the app load immediately
@@ -84,8 +63,7 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
               readyCalled: ${readyCalled},
               contextLoaded: ${!!context},
               error: ${error ? JSON.stringify(error) : 'null'},
-              timestamp: new Date().toISOString(),
-              windowFarcaster: ${typeof window !== 'undefined' && (window as any).farcaster ? 'true' : 'false'}
+              timestamp: new Date().toISOString()
             };
             console.log('Farcaster Debug:', window.farcasterDebug);
           `
