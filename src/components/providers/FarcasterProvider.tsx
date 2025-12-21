@@ -41,10 +41,27 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
                 .then((ctx: any) => {
                   console.log('✅ Context loaded:', ctx)
                   setContext(ctx)
+
+                  // Set global window properties for compatibility
+                  if (typeof window !== 'undefined') {
+                    (window as any).isFarcasterMiniApp = true
+                    ;(window as any).farcasterContext = ctx
+                  }
                 })
                 .catch((err: any) => {
                   console.warn('⚠️ Context not available:', err)
+                  // If no context, we're not in a mini app
+                  if (typeof window !== 'undefined') {
+                    (window as any).isFarcasterMiniApp = false
+                    ;(window as any).farcasterContext = null
+                  }
                 })
+            } else {
+              // If no context available, not in mini app
+              if (typeof window !== 'undefined') {
+                (window as any).isFarcasterMiniApp = false
+                ;(window as any).farcasterContext = null
+              }
             }
           } catch (error) {
             console.error('❌ ERROR calling ready():', error)
