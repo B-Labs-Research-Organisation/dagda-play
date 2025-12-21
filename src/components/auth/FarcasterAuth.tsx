@@ -58,7 +58,8 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
 
       // Try to open Farcaster auth popup
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dagda-play.vercel.app'
-      const authUrl = `https://warpcast.com/~/sign-in-with-farcaster?client_id=${baseUrl}`
+      const authUrl = `https://warpcast.com/~/sign-in-with-farcaster?client_id=${encodeURIComponent(baseUrl)}`
+      console.log('OAuth URL:', authUrl)
       const popup = window.open(
         authUrl,
         'farcaster-auth',
