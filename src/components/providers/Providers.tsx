@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthKitProvider } from '@farcaster/auth-kit'
@@ -11,18 +11,25 @@ import { FarcasterProvider } from '@/components/providers/FarcasterProvider'
 // Create a client
 const queryClient = new QueryClient()
 
-// AuthKit configuration
-const authKitConfig = {
-  rpcUrl: 'https://mainnet.optimism.io',
-  domain: typeof window !== 'undefined' ? window.location.host : 'dagda-play.vercel.app',
-  siweUri: typeof window !== 'undefined' ? window.location.origin : 'https://dagda-play.vercel.app',
-}
-
 interface ProvidersProps {
   children: ReactNode
 }
 
 export function Providers({ children }: ProvidersProps) {
+  // Create AuthKit config dynamically on the client
+  const authKitConfig = useMemo(() => {
+    console.log('🔧 Creating AuthKit config:', {
+      domain: window.location.host,
+      siweUri: window.location.origin,
+    })
+    
+    return {
+      rpcUrl: 'https://mainnet.optimism.io',
+      domain: window.location.host,
+      siweUri: window.location.origin,
+    }
+  }, [])
+
   return (
     <FarcasterProvider>
       <AuthKitProvider config={authKitConfig}>

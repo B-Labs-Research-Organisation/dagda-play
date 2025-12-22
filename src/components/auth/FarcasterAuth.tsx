@@ -19,7 +19,7 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
     error,
   } = useSignIn({
     onSuccess: useCallback((data: any) => {
-      console.log('Farcaster sign-in successful:', data)
+      console.log('✅ Farcaster sign-in successful:', data)
       
       if (data?.fid) {
         onAuth({
@@ -30,10 +30,21 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
       }
     }, [onAuth]),
     onError: useCallback((error: any) => {
-      console.error('Farcaster sign-in error:', error)
+      console.error('❌ Farcaster sign-in error:', error)
       alert(`Farcaster authentication failed: ${error?.message || 'Unknown error'}`)
     }, []),
   })
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 useSignIn state:', {
+      signInUrl,
+      isSuccess,
+      isError,
+      error: error?.message,
+      hasData: !!signInData
+    })
+  }, [signInUrl, isSuccess, isError, error, signInData])
 
   useEffect(() => {
     // Check if we're in a mini app context
