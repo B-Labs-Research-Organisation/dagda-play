@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useMemo } from 'react'
+import { ReactNode, useMemo, useState, useEffect } from 'react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthKitProvider } from '@farcaster/auth-kit'
@@ -16,8 +16,23 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   // Create AuthKit config dynamically on the client
   const authKitConfig = useMemo(() => {
+    if (!isClient) {
+      // Return default config for SSR
+      return {
+        rpcUrl: 'https://mainnet.optimism.io',
+        domain: 'dagda-play.vercel.app',
+        siweUri: 'https://dagda-play.vercel.app',
+      }
+    }
+
     console.log('🔧 Creating AuthKit config:', {
       domain: window.location.host,
       siweUri: window.location.origin,
@@ -28,7 +43,7 @@ export function Providers({ children }: ProvidersProps) {
       domain: window.location.host,
       siweUri: window.location.origin,
     }
-  }, [])
+  }, [isClient])
 
   return (
     <FarcasterProvider>
