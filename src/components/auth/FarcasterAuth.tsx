@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { SignInButton, useProfile } from '@farcaster/auth-kit'
+import { useSignIn, useProfile } from '@farcaster/auth-kit'
 
 interface FarcasterAuthProps {
   onAuth: (profile: { fid: number; username: string; displayName: string }) => void
@@ -10,11 +10,22 @@ interface FarcasterAuthProps {
 export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
   const [isMiniApp, setIsMiniApp] = useState(false)
   const { isAuthenticated, profile } = useProfile()
+  
+  // Use the signIn hook with callbacks
+  const { signIn, url, isSuccess, isError } = useSignIn({
+    onSuccess: (data: any) => {
+      console.log('✅ Farcaster sign-in successful:', data)
+    },
+    onError: (error: any) => {
+      console.error('❌ Farcaster sign-in error:', error)
+      alert(`Farcaster authentication failed: ${error?.message || 'Unknown error'}`)
+    }
+  })
 
-  // Handle authentication success
+  // Handle authentication success via useProfile
   useEffect(() => {
     if (isAuthenticated && profile?.fid) {
-      console.log('✅ Farcaster authenticated:', profile)
+      console.log('✅ Farcaster authenticated via profile:', profile)
       onAuth({
         fid: profile.fid,
         username: profile.username || `user-${profile.fid}`,
@@ -22,6 +33,14 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
       })
     }
   }, [isAuthenticated, profile, onAuth])
+
+  // Open popup when URL is ready
+  useEffect(() => {
+    if (url) {
+      console.log('🔗 Opening Farcaster auth URL:', url)
+      window.open(url, 'farcaster-auth', 'width=500,height=700')
+    }
+  }, [url])
 
   useEffect(() => {
     // Check if we're in a mini app context
@@ -114,17 +133,26 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
 
   return (
     <div className="text-center">
-      <div className="w-full">
-        <SignInButton
-          onSuccess={(data: any) => {
-            console.log('✅ Sign in successful:', data)
-          }}
-          onError={(error: any) => {
-            console.error('❌ Sign in error:', error)
-            alert(`Farcaster authentication failed: ${error?.message || 'Unknown error'}`)
-          }}
-        />
-      </div>
+      <button
+        onClick={() => {
+          console.log('🎯 Sign in button clicked')
+          signIn()
+        }}
+        disabled={!!url || isSuccess}
+        className="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-purple-800 disabled:to-blue-800 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none flex items-center justify-center gap-2"
+      >
+        {url ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Signing in with Farcaster...
+          </>
+        ) : (
+          <>
+            <span className="text-xl">🟣</span>
+            Sign in with Farcaster
+          </>
+        )}
+      </button>
 
       <div className="mt-3 text-xs text-green-400">
         Get +5 bonus PIE and 5 plays/day!
