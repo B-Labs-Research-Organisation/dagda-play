@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useSignIn, useProfile } from '@farcaster/auth-kit'
+import { useSignIn, useProfile, QRCode } from '@farcaster/auth-kit'
 
 interface FarcasterAuthProps {
   onAuth: (profile: { fid: number; username: string; displayName: string }) => void
@@ -34,13 +34,13 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
     }
   }, [isAuthenticated, profile, onAuth])
 
-  // Open popup when URL is ready
+  // Auto-generate sign-in URL when component mounts (for web users)
   useEffect(() => {
-    if (url) {
-      console.log('🔗 Opening Farcaster auth URL:', url)
-      window.open(url, 'farcaster-auth', 'width=500,height=700')
+    if (!isMiniApp && !url && !isSuccess) {
+      console.log('� Auto-generating Farcaster sign-in URL...')
+      signIn()
     }
-  }, [url])
+  }, [isMiniApp, url, isSuccess, signIn])
 
   useEffect(() => {
     // Check if we're in a mini app context
@@ -133,28 +133,36 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
 
   return (
     <div className="text-center">
-      <button
-        onClick={() => {
-          console.log('🎯 Sign in button clicked')
-          signIn()
-        }}
-        disabled={!!url || isSuccess}
-        className="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-purple-800 disabled:to-blue-800 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none flex items-center justify-center gap-2"
-      >
-        {url ? (
-          <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            Signing in with Farcaster...
-          </>
-        ) : (
-          <>
-            <span className="text-xl">🟣</span>
-            Sign in with Farcaster
-          </>
-        )}
-      </button>
+      <div className="mb-4">
+        <h3 className="text-lg font-bold text-purple-300 mb-2">Sign in with Farcaster</h3>
+        <p className="text-sm text-gray-400 mb-4">Scan this QR code with your phone</p>
+      </div>
 
-      <div className="mt-3 text-xs text-green-400">
+      {url ? (
+        <div className="flex flex-col items-center">
+          <div className="bg-white p-4 rounded-lg mb-4">
+            <QRCode uri={url} size={256} />
+          </div>
+          <p className="text-xs text-gray-400 mb-2">
+            Open your Farcaster app and scan this code
+          </p>
+          <a 
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-purple-400 hover:text-purple-300 underline"
+          >
+            Or click here to sign in on mobile
+          </a>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center">
+          <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+          <p className="text-sm text-gray-400">Generating QR code...</p>
+        </div>
+      )}
+
+      <div className="mt-4 text-xs text-green-400">
         Get +5 bonus PIE and 5 plays/day!
       </div>
     </div>

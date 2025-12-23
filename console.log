@@ -1,11 +1,8 @@
-🔍 useSignIn state: 
-Object { signInUrl: undefined, isSuccess: false, isError: false, error: undefined, hasData: false }
-c9ba6560e038a0ef.js:1:24762
 Context check: 
 Object { miniApp: undefined, farcasterContext: undefined }
-c9ba6560e038a0ef.js:1:24984
-Is in iframe: false c9ba6560e038a0ef.js:1:25342
-Web context detected, will offer Farcaster authentication c9ba6560e038a0ef.js:1:25881
+77b5f4b147485318.js:1:25058
+Is in iframe: false 77b5f4b147485318.js:1:25416
+Web context detected, will offer Farcaster authentication 77b5f4b147485318.js:1:25955
 🔍 FarcasterProvider useEffect running a2c6a2d7affda0ab.js:1:57911
 🔍 Window exists: true a2c6a2d7affda0ab.js:1:57965
 🔧 Creating AuthKit config: 
@@ -21,7 +18,8 @@ a2c6a2d7affda0ab.js:1:58100
 Object { eventNames: BoundFunctionObject, listenerCount: BoundFunctionObject, listeners: BoundFunctionObject, addListener: BoundFunctionObject, emit: BoundFunctionObject, off: BoundFunctionObject, on: BoundFunctionObject, once: BoundFunctionObject, removeAllListeners: BoundFunctionObject, removeListener: BoundFunctionObject, … }
 a2c6a2d7affda0ab.js:1:58157
 ✅ SDK.actions: 
-Object { setPrimaryButton: Proxy, ready: async ready(), close: Proxy, viewCast: Proxy, viewProfile: Proxy, openMiniApp: Proxy, signIn: async signIn(e), openUrl: openUrl(e), addFrame: async u7(), addMiniApp: async u7(), … }
+Object { setPrimaryButton: Proxy, ready: async ready(), close: Proxy, viewCast: Proxy, viewProfile: Proxy, openMiniApp: Proxy, signIn: async signIn(e), openUrl: openUrl(e), addFrame: async u7(), addMiniApp: async u7()
+, … }
 a2c6a2d7affda0ab.js:1:58188
 ✅ SDK.actions.ready: 
 async function ready()
@@ -31,8 +29,7 @@ a2c6a2d7affda0ab.js:1:58243
 ✅ Context loaded: undefined a2c6a2d7affda0ab.js:1:58544
 Context check: 
 Object { miniApp: true, farcasterContext: undefined }
-c9ba6560e038a0ef.js:1:24984
-Is in iframe: false c9ba6560e038a0ef.js:1:25342
-Web context detected, will offer Farcaster authentication c9ba6560e038a0ef.js:1:25881
-Starting Farcaster sign-in... c9ba6560e038a0ef.js:1:26140
-Starting Farcaster sign-in... 5 c9ba6560e038a0ef.js:1:26140
+77b5f4b147485318.js:1:25058
+Is in iframe: false 77b5f4b147485318.js:1:25416
+Web context detected, will offer Farcaster authentication 77b5f4b147485318.js:1:25955
+🎯 Sign in button clicked
