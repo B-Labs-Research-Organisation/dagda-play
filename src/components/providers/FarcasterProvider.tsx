@@ -1,6 +1,7 @@
 'use client'
 
-import { ReactNode, useEffect, useState, useRef } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
+import sdk from '@farcaster/miniapp-sdk'
 
 interface FarcasterProviderProps {
   children: ReactNode
@@ -8,75 +9,41 @@ interface FarcasterProviderProps {
 
 export function FarcasterProvider({ children }: FarcasterProviderProps) {
   const [context, setContext] = useState<any>(null)
-  const readyCalledRef = useRef(false)
 
   useEffect(() => {
-    console.log('🔍 FarcasterProvider useEffect running')
-    console.log('🔍 Window exists:', typeof window !== 'undefined')
-    
-    if (readyCalledRef.current) {
-      console.log('⚠️ ready() already called, skipping')
-      return
+    // Call ready() SYNCHRONOUSLY - this is critical!
+    try {
+      console.log('� Calling sdk.actions.ready() synchronously...')
+      sdk.actions.ready()
+      console.log('✅ sdk.actions.ready() called successfully')
+    } catch (error) {
+      console.error('❌ Error calling ready():', error)
     }
 
-    // Try to dynamically import and call ready
-    import('@farcaster/miniapp-sdk')
-      .then((module) => {
-        console.log('✅ SDK module loaded:', module)
-        const sdk = module.default
-        console.log('✅ SDK object:', sdk)
-        console.log('✅ SDK.actions:', sdk?.actions)
-        console.log('✅ SDK.actions.ready:', sdk?.actions?.ready)
+    // Load context asynchronously (after ready() is already called)
+    const loadContext = async () => {
+      try {
+        const ctx = await sdk.context
+        console.log('✅ Context loaded:', ctx)
+        setContext(ctx)
 
-        if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-          try {
-            console.log('🚀 Calling sdk.actions.ready()...')
-            sdk.actions.ready()
-            readyCalledRef.current = true
-            console.log('✅✅✅ sdk.actions.ready() CALLED SUCCESSFULLY')
-
-            // Load context
-            if (sdk.context) {
-              sdk.context
-                .then((ctx: any) => {
-                  console.log('✅ Context loaded:', ctx)
-                  setContext(ctx)
-
-                  // Set global window properties for compatibility
-                  if (typeof window !== 'undefined') {
-                    (window as any).isFarcasterMiniApp = true
-                    ;(window as any).farcasterContext = ctx
-                  }
-                })
-                .catch((err: any) => {
-                  console.warn('⚠️ Context not available:', err)
-                  // If no context, we're not in a mini app
-                  if (typeof window !== 'undefined') {
-                    (window as any).isFarcasterMiniApp = false
-                    ;(window as any).farcasterContext = null
-                  }
-                })
-            } else {
-              // If no context available, not in mini app
-              if (typeof window !== 'undefined') {
-                (window as any).isFarcasterMiniApp = false
-                ;(window as any).farcasterContext = null
-              }
-            }
-          } catch (error) {
-            console.error('❌ ERROR calling ready():', error)
-            console.error('❌ Error details:', JSON.stringify(error, null, 2))
-          }
-        } else {
-          console.error('❌ SDK or SDK.actions.ready not available')
-          console.error('❌ sdk:', sdk)
-          console.error('❌ sdk.actions:', sdk?.actions)
+        // Set global window properties
+        if (typeof window !== 'undefined') {
+          (window as any).isFarcasterMiniApp = true
+          ;(window as any).farcasterContext = ctx
         }
-      })
-      .catch((error) => {
-        console.error('❌ Failed to load SDK:', error)
-        console.error('❌ Error details:', JSON.stringify(error, null, 2))
-      })
+      } catch (error) {
+        console.warn('⚠️ Context not available (not in mini-app):', error)
+        
+        // Not in mini-app environment
+        if (typeof window !== 'undefined') {
+          (window as any).isFarcasterMiniApp = false
+          ;(window as any).farcasterContext = null
+        }
+      }
+    }
+
+    loadContext()
   }, [])
 
   return <>{children}</>

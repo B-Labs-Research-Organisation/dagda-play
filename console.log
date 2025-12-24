@@ -1,8 +1,9 @@
+� Auto-generating Farcaster sign-in URL... c5bfca5f59e5c466.js:1:24860
 Context check: 
 Object { miniApp: undefined, farcasterContext: undefined }
-77b5f4b147485318.js:1:25058
-Is in iframe: false 77b5f4b147485318.js:1:25416
-Web context detected, will offer Farcaster authentication 77b5f4b147485318.js:1:25955
+c5bfca5f59e5c466.js:1:25029
+Is in iframe: false c5bfca5f59e5c466.js:1:25387
+Web context detected, will offer Farcaster authentication c5bfca5f59e5c466.js:1:25926
 🔍 FarcasterProvider useEffect running a2c6a2d7affda0ab.js:1:57911
 🔍 Window exists: true a2c6a2d7affda0ab.js:1:57965
 🔧 Creating AuthKit config: 
@@ -11,6 +12,7 @@ a2c6a2d7affda0ab.js:1:59358
 🔧 Creating AuthKit config: 
 Object { domain: "dagda-play.vercel.app", siweUri: "https://dagda-play.vercel.app" }
 a2c6a2d7affda0ab.js:1:59358
+� Auto-generating Farcaster sign-in URL... c5bfca5f59e5c466.js:1:24860
 ✅ SDK module loaded: 
 Object { AddMiniApp: Getter, Back: Getter, ComposeCast: Getter, Context: Getter, DEFAULT_READY_OPTIONS: Getter, Errors: Getter, Ethereum: Getter, Haptics: Getter, Manifest: Getter, OpenMiniApp: Getter, … }
 a2c6a2d7affda0ab.js:1:58100
@@ -29,7 +31,6 @@ a2c6a2d7affda0ab.js:1:58243
 ✅ Context loaded: undefined a2c6a2d7affda0ab.js:1:58544
 Context check: 
 Object { miniApp: true, farcasterContext: undefined }
-77b5f4b147485318.js:1:25058
-Is in iframe: false 77b5f4b147485318.js:1:25416
-Web context detected, will offer Farcaster authentication 77b5f4b147485318.js:1:25955
-🎯 Sign in button clicked
+c5bfca5f59e5c466.js:1:25029
+Is in iframe: false c5bfca5f59e5c466.js:1:25387
+Web context detected, will offer Farcaster authentication
