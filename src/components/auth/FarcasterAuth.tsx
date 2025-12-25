@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useSignIn, useProfile, QRCode } from '@farcaster/auth-kit'
+import { useSignIn, StatusAPIResponse } from '@farcaster/auth-kit'
 
 interface FarcasterAuthProps {
   onAuth: (profile: { fid: number; username: string; displayName: string }) => void
@@ -9,44 +9,41 @@ interface FarcasterAuthProps {
 
 export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
   const [isMiniApp, setIsMiniApp] = useState(false)
-  const { isAuthenticated, profile } = useProfile()
-  
-  // Use the signIn hook with callbacks
-  const { signIn, url, isSuccess, isError } = useSignIn({
-    onSuccess: (data: any) => {
-      console.log('✅ Farcaster sign-in successful:', data)
+
+  const {
+    signIn,
+    signOut,
+    connect,
+    reconnect,
+    isSuccess,
+    isError,
+    error,
+    channelToken,
+    url,
+    data,
+    validSignature,
+  } = useSignIn({
+    onSuccess: (res: StatusAPIResponse) => {
+      console.log('✅ Farcaster sign-in successful:', res)
+      
+      // Extract user data from response
+      if (res.fid) {
+        onAuth({
+          fid: res.fid,
+          username: res.username || `user-${res.fid}`,
+          displayName: res.displayName || res.username || `User ${res.fid}`,
+        })
+      }
     },
-    onError: (error: any) => {
-      console.error('❌ Farcaster sign-in error:', error)
-      alert(`Farcaster authentication failed: ${error?.message || 'Unknown error'}`)
-    }
+    onError: (err?: Error) => {
+      console.error('❌ Farcaster sign-in error:', err)
+    },
   })
 
-  // Handle authentication success via useProfile
+  // Check for mini app context
   useEffect(() => {
-    if (isAuthenticated && profile?.fid) {
-      console.log('✅ Farcaster authenticated via profile:', profile)
-      onAuth({
-        fid: profile.fid,
-        username: profile.username || `user-${profile.fid}`,
-        displayName: profile.displayName || profile.username || `User ${profile.fid}`,
-      })
-    }
-  }, [isAuthenticated, profile, onAuth])
-
-  // Auto-generate sign-in URL when component mounts (for web users)
-  useEffect(() => {
-    if (!isMiniApp && !url && !isSuccess) {
-      console.log('� Auto-generating Farcaster sign-in URL...')
-      signIn()
-    }
-  }, [isMiniApp, url, isSuccess, signIn])
-
-  useEffect(() => {
-    // Check if we're in a mini app context
     const checkContext = () => {
       if (typeof window !== 'undefined') {
-        // Check for mini app context first
         const miniApp = (window as any).isFarcasterMiniApp
         const farcasterContext = (window as any).farcasterContext
 
@@ -60,61 +57,22 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
             username: farcasterContext.user.username || farcasterContext.user.name || 'miniapp-user',
             displayName: farcasterContext.user.displayName || farcasterContext.user.username || farcasterContext.user.name || 'Mini App User'
           })
-          return
         }
-
-        // Check if we're in an iframe (likely preview tool)
-        const isInIframe = window.self !== window.top
-        console.log('Is in iframe:', isInIframe)
-
-        if (isInIframe) {
-          // For preview tool, simulate authentication after a delay
-          console.log('In iframe context (preview tool), simulating authentication')
-          setTimeout(() => {
-            setIsMiniApp(true)
-            onAuth({
-              fid: 99999,
-              username: 'preview-user',
-              displayName: 'Preview User'
-            })
-          }, 1000)
-          return
-        }
-
-        // Check for Farcaster sign-in redirect
-        const urlParams = new URLSearchParams(window.location.search)
-        const authParam = urlParams.get('auth')
-
-        if (authParam === 'farcaster_signin') {
-          console.log('Farcaster sign-in redirect detected')
-          // Clear the auth parameter from URL
-          const newUrl = new URL(window.location.href)
-          newUrl.searchParams.delete('auth')
-          window.history.replaceState({}, '', newUrl.toString())
-
-          // Authenticate as Farcaster user
-          setIsMiniApp(true)
-          onAuth({
-            fid: 12345,
-            username: 'farcaster-user',
-            displayName: 'Farcaster User'
-          })
-          return
-        }
-
-        // Web context - offer Farcaster authentication
-        console.log('Web context detected, will offer Farcaster authentication')
-        setIsMiniApp(false)
       }
     }
 
     checkContext()
-
-    // Also check after a delay to ensure SDK has loaded
     const timeoutId = setTimeout(checkContext, 2000)
     return () => clearTimeout(timeoutId)
   }, [onAuth])
 
+  // Trigger sign-in flow on mount for web users
+  useEffect(() => {
+    if (!isMiniApp && !url && !isSuccess && !channelToken) {
+      console.log('🔄 Initiating Farcaster sign-in...')
+      signIn()
+    }
+  }, [isMiniApp, url, isSuccess, channelToken, signIn])
 
   // Don't show auth button if already authenticated in mini app
   if (isMiniApp) {
@@ -131,20 +89,46 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
     )
   }
 
+  if (isSuccess && data) {
+    return (
+      <div className="text-center">
+        <div className="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg flex items-center justify-center gap-2">
+          <span className="text-xl">🟣</span>
+          Connected as {data.username || `User ${data.fid}`}
+        </div>
+        <button
+          onClick={signOut}
+          className="mt-3 text-xs text-red-400 hover:text-red-300 underline"
+        >
+          Sign out
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="text-center">
       <div className="mb-4">
         <h3 className="text-lg font-bold text-purple-300 mb-2">Sign in with Farcaster</h3>
-        <p className="text-sm text-gray-400 mb-4">Scan this QR code with your phone</p>
+        {url ? (
+          <p className="text-sm text-gray-400 mb-4">Scan this QR code with your phone</p>
+        ) : (
+          <p className="text-sm text-gray-400 mb-4">Generating sign-in QR code...</p>
+        )}
       </div>
 
       {url ? (
         <div className="flex flex-col items-center">
           <div className="bg-white p-4 rounded-lg mb-4">
-            <QRCode uri={url} size={256} />
+            {/* Use QR code API service to generate QR code from URL */}
+            <img 
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(url)}`}
+              alt="Farcaster Sign-In QR Code" 
+              className="w-64 h-64"
+            />
           </div>
           <p className="text-xs text-gray-400 mb-2">
-            Open your Farcaster app and scan this code
+            Open Warpcast and scan this code to sign in
           </p>
           <a 
             href={url}
@@ -157,14 +141,25 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
         </div>
       ) : (
         <div className="flex flex-col items-center">
-          <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-          <p className="text-sm text-gray-400">Generating QR code...</p>
+          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+          <p className="text-sm text-gray-400">Loading...</p>
+          {isError && (
+            <p className="text-xs text-red-400 mt-2">
+              Error: {error?.message || 'Failed to initialize sign-in'}
+            </p>
+          )}
         </div>
       )}
 
       <div className="mt-4 text-xs text-green-400">
-        Get +5 bonus PIE and 5 plays/day!
+        Get +10 bonus PIE and 5 plays/day with Farcaster!
       </div>
+
+      {channelToken && (
+        <div className="mt-2 text-xs text-gray-500">
+          Waiting for authentication...
+        </div>
+      )}
     </div>
   )
 }
