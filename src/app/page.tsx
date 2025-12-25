@@ -25,12 +25,20 @@ export default function Home() {
   const limitManager = new LimitManager()
 
   const loadUserData = useCallback(async () => {
-    if (!address) return
-
     try {
-      // Use wallet address as user ID
-      const userId = address.toLowerCase()
-      const username = `Player_${address.slice(0, 6)}`
+      // Use wallet address OR Farcaster FID as user ID
+      let userId: string
+      let username: string
+
+      if (address) {
+        userId = address.toLowerCase()
+        username = `Player_${address.slice(0, 6)}`
+      } else if (farcasterProfile?.fid) {
+        userId = `fid-${farcasterProfile.fid}`
+        username = farcasterProfile.username || `User-${farcasterProfile.fid}`
+      } else {
+        return // No user ID available
+      }
 
       const userBalance = await balanceManager.getBalance(userId, username)
       setBalance(userBalance)
@@ -45,14 +53,17 @@ export default function Home() {
     } catch (error) {
       console.error('Error loading user data:', error)
     }
-  }, [address])
+  }, [address, farcasterProfile])
 
   useEffect(() => {
     if (isConnected && address) {
-      // Load user balance and limits
+      // Load user balance and limits for wallet users
+      loadUserData()
+    } else if (isFarcasterUser && farcasterProfile) {
+      // Load user balance and limits for Farcaster users
       loadUserData()
     }
-  }, [isConnected, address, loadUserData])
+  }, [isConnected, address, isFarcasterUser, farcasterProfile, loadUserData])
 
   const handleFarcasterAuth = (profile: { fid: number; username: string; displayName: string }) => {
     console.log('Farcaster auth successful:', profile)
@@ -64,11 +75,20 @@ export default function Home() {
   }
 
   const applyFarcasterIncentives = async () => {
-    if (!address) return
-
     try {
-      const userId = address.toLowerCase()
-      const username = farcasterProfile?.username || `Player_${address.slice(0, 6)}`
+      // Use wallet address OR Farcaster FID as user ID
+      let userId: string
+      let username: string
+
+      if (address) {
+        userId = address.toLowerCase()
+        username = farcasterProfile?.username || `Player_${address.slice(0, 6)}`
+      } else if (farcasterProfile?.fid) {
+        userId = `fid-${farcasterProfile.fid}`
+        username = farcasterProfile.username || `User-${farcasterProfile.fid}`
+      } else {
+        return // No user ID available
+      }
 
       // Give Farcaster users bonus PIE
       const currentBalance = await balanceManager.getBalance(userId, username)
@@ -93,7 +113,8 @@ export default function Home() {
     setCurrentGame(null)
   }
 
-  if (!isConnected) {
+  // Show welcome screen if not connected via wallet AND not authenticated via Farcaster
+  if (!isConnected && !isFarcasterUser) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8 bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 max-w-md">
