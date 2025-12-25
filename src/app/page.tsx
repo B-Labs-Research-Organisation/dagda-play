@@ -171,11 +171,11 @@ export default function Home() {
   }
 
   if (currentGame === 'coinflip') {
-    return <CoinflipGame onComplete={handleGameComplete} balance={balance} />
+    return <CoinflipGame onComplete={handleGameComplete} balance={balance} farcasterProfile={farcasterProfile} />
   }
 
   if (currentGame === 'randomizer') {
-    return <RandomizerGame onComplete={handleGameComplete} balance={balance} />
+    return <RandomizerGame onComplete={handleGameComplete} balance={balance} farcasterProfile={farcasterProfile} />
   }
 
   return (

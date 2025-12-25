@@ -8,6 +8,7 @@ import { LimitManager } from '@/lib/LimitManager'
 interface RandomizerGameProps {
   onComplete: () => void
   balance: number
+  farcasterProfile?: { fid?: number; username?: string } | null
 }
 
 type GameState = 'ready' | 'spinning' | 'result'
@@ -19,7 +20,7 @@ interface Outcome {
   color: string
 }
 
-export function RandomizerGame({ onComplete, balance }: RandomizerGameProps) {
+export function RandomizerGame({ onComplete, balance, farcasterProfile }: RandomizerGameProps) {
   const { address } = useAccount()
   const [gameState, setGameState] = useState<GameState>('ready')
   const [isSpinning, setIsSpinning] = useState(false)
@@ -43,14 +44,20 @@ export function RandomizerGame({ onComplete, balance }: RandomizerGameProps) {
     if (gameState !== 'ready') return
 
     try {
-      // Check wallet connection
-      if (!address) {
-        setMessage('Please connect your wallet first.')
+      // Get user ID from wallet OR Farcaster
+      let userId: string
+      let username: string
+
+      if (address) {
+        userId = address.toLowerCase()
+        username = `Player_${address.slice(0, 6)}`
+      } else if (farcasterProfile?.fid) {
+        userId = `fid-${farcasterProfile.fid}`
+        username = farcasterProfile.username || `User-${farcasterProfile.fid}`
+      } else {
+        setMessage('Please connect your wallet or sign in with Farcaster first.')
         return
       }
-
-      const userId = address.toLowerCase()
-      const username = `Player_${address.slice(0, 6)}`
 
       const limitCheck = await limitManager.checkAndUpdateLimit(userId, username, 'randomizer')
       if (!limitCheck.canPlay) {
