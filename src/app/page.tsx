@@ -59,42 +59,74 @@ export default function Home() {
     if (isConnected && address) {
       // Load user balance and limits for wallet users
       loadUserData()
-    } else if (isFarcasterUser && farcasterProfile) {
-      // Load user balance and limits for Farcaster users
-      loadUserData()
     }
-  }, [isConnected, address, isFarcasterUser, farcasterProfile, loadUserData])
+    // Note: Don't auto-load for Farcaster users here - it's handled in handleFarcasterAuth
+  }, [isConnected, address, loadUserData])
 
-  const handleFarcasterAuth = (profile: { fid: number; username: string; displayName: string }) => {
+  const handleFarcasterAuth = async (profile: { fid: number; username: string; displayName: string }) => {
     console.log('Farcaster auth successful:', profile)
     setIsFarcasterUser(true)
     setFarcasterProfile(profile)
 
-    // Apply Farcaster incentives
-    applyFarcasterIncentives()
+    // Apply Farcaster incentives with the profile data
+    await applyFarcasterIncentives(profile)
+    
+    // Load user data to sync with database (this should respect the Farcaster bonus we just applied)
+    await loadUserDataForFarcaster(profile)
   }
 
-  const applyFarcasterIncentives = async () => {
+  const loadUserDataForFarcaster = async (profile: { fid: number; username: string; displayName: string }) => {
     try {
+      const userId = `fid-${profile.fid}`
+      const username = profile.username || `User-${profile.fid}`
+
+      // Get balance (should now be 25 after bonus)
+      const userBalance = await balanceManager.getBalance(userId, username)
+      setBalance(userBalance)
+
+      // For Farcaster users, always set 5 plays (don't load from database)
+      setDailyLimits({
+        coinflip: { remaining: 5, resetsIn: '24h 0m' },
+        randomizer: { remaining: 5, resetsIn: '24h 0m' }
+      })
+    } catch (error) {
+      console.error('Error loading Farcaster user data:', error)
+    }
+  }
+
+  const applyFarcasterIncentives = async (profile?: { fid?: number; username?: string; displayName?: string }) => {
+    try {
+      // Use the passed profile or fallback to state
+      const farcasterData = profile || farcasterProfile
+      
       // Use wallet address OR Farcaster FID as user ID
       let userId: string
       let username: string
 
       if (address) {
         userId = address.toLowerCase()
-        username = farcasterProfile?.username || `Player_${address.slice(0, 6)}`
-      } else if (farcasterProfile?.fid) {
-        userId = `fid-${farcasterProfile.fid}`
-        username = farcasterProfile.username || `User-${farcasterProfile.fid}`
+        username = farcasterData?.username || `Player_${address.slice(0, 6)}`
+      } else if (farcasterData?.fid) {
+        userId = `fid-${farcasterData.fid}`
+        username = farcasterData.username || `User-${farcasterData.fid}`
       } else {
+        console.log('No user ID available for Farcaster incentives')
         return // No user ID available
       }
 
+      console.log('Applying Farcaster incentives for:', { userId, username })
+
       // Give Farcaster users bonus PIE (25 total: 15 starting + 10 bonus)
       const currentBalance = await balanceManager.getBalance(userId, username)
+      console.log('Current balance:', currentBalance)
+      
       if (currentBalance === 15) { // Only if it's the starting balance
         await balanceManager.updateBalance(userId, username, 10) // +10 bonus PIE
         setBalance(25) // Update local state to 25 PIE total
+        console.log('✅ Bonus applied: 25 PIE total')
+      } else {
+        // If user already has a balance, just set it
+        setBalance(currentBalance)
       }
 
       // Update limits for Farcaster users (5 plays instead of 3)
@@ -102,6 +134,7 @@ export default function Home() {
         coinflip: { remaining: 5, resetsIn: '24h 0m' },
         randomizer: { remaining: 5, resetsIn: '24h 0m' }
       })
+      console.log('✅ Farcaster limits applied: 5 plays each')
     } catch (error) {
       console.error('Error applying Farcaster incentives:', error)
     }
