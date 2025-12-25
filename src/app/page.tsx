@@ -90,11 +90,11 @@ export default function Home() {
         return // No user ID available
       }
 
-      // Give Farcaster users bonus PIE
+      // Give Farcaster users bonus PIE (25 total: 15 starting + 10 bonus)
       const currentBalance = await balanceManager.getBalance(userId, username)
       if (currentBalance === 15) { // Only if it's the starting balance
-        await balanceManager.updateBalance(userId, username, 5) // +5 bonus PIE
-        setBalance(20) // Update local state
+        await balanceManager.updateBalance(userId, username, 10) // +10 bonus PIE
+        setBalance(25) // Update local state to 25 PIE total
       }
 
       // Update limits for Farcaster users (5 plays instead of 3)
