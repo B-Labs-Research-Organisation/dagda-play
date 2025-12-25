@@ -30,19 +30,20 @@ export function Providers({ children }: ProvidersProps) {
         rpcUrl: 'https://mainnet.optimism.io',
         domain: 'dagda-play.vercel.app',
         siweUri: 'https://dagda-play.vercel.app',
+        relay: 'https://relay.farcaster.xyz',
       }
     }
 
-    console.log('🔧 Creating AuthKit config:', {
-      domain: window.location.host,
-      siweUri: window.location.origin,
-    })
-    
-    return {
+    const config = {
       rpcUrl: 'https://mainnet.optimism.io',
       domain: window.location.host,
       siweUri: window.location.origin,
+      relay: 'https://relay.farcaster.xyz',
     }
+
+    console.log('🔧 Creating AuthKit config:', config)
+    
+    return config
   }, [isClient])
 
   return (
