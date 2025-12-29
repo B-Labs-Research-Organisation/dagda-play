@@ -53,7 +53,7 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
   return (
     <div className="text-center">
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-purple-300 mb-2">Play with Farcaster</h3>
+        <h3 className="text-lg font-bold text-purple-300 mb-2">Play in Farcaster</h3>
         <p className="text-sm text-gray-400 mb-4">Get exclusive benefits when you play through Farcaster!</p>
       </div>
 
@@ -75,7 +75,7 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
           </li>
           <li className="flex items-center gap-2">
             <span className="text-green-400">✓</span>
-            <span>Seamless gameplay in Warpcast</span>
+            <span>Seamless gameplay</span>
           </li>
         </ul>
 
@@ -92,7 +92,7 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
         </a>
 
         <p className="text-xs text-gray-400 mt-3">
-          Opens in Warpcast mini-app • Instant access with your Farcaster account
+          Opens as a Farcaster mini-app • Instant access with your Farcaster account
         </p>
       </div>
 

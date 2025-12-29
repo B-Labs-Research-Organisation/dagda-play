@@ -152,7 +152,7 @@ export default function Home() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8 bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 max-w-md">
           <h2 className="text-3xl font-bold text-green-100 mb-6">🏰 Welcome to Dagda Play</h2>
-          <p className="text-green-200 mb-8">Connect your wallet to start playing!</p>
+          <p className="text-green-200 mb-8">Connect your wallet to start playing! Or</p>
 
           {/* Farcaster Auth Option */}
           <div className="mb-6">
