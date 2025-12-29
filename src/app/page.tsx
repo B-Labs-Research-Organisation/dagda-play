@@ -162,7 +162,7 @@ export default function Home() {
           <div className="text-sm text-green-300 space-y-2">
             <p>🎮 Play games • 🪙 Earn PIE tokens • 🏆 Collect achievements</p>
             <p className="text-yellow-400 font-semibold">
-              ✨ Farcaster users get +5 bonus PIE and 5 plays/day!
+              ✨ Farcaster users get +10 bonus PIE and 5 plays/day!
             </p>
           </div>
         </div>
