@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useSignIn, StatusAPIResponse } from '@farcaster/auth-kit'
 
 interface FarcasterAuthProps {
   onAuth: (profile: { fid: number; username: string; displayName: string }) => void
@@ -9,36 +8,6 @@ interface FarcasterAuthProps {
 
 export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
   const [isMiniApp, setIsMiniApp] = useState(false)
-
-  const {
-    signIn,
-    signOut,
-    connect,
-    reconnect,
-    isSuccess,
-    isError,
-    error,
-    channelToken,
-    url,
-    data,
-    validSignature,
-  } = useSignIn({
-    onSuccess: (res: StatusAPIResponse) => {
-      console.log('✅ Farcaster sign-in successful:', res)
-      
-      // Extract user data from response
-      if (res.fid) {
-        onAuth({
-          fid: res.fid,
-          username: res.username || `user-${res.fid}`,
-          displayName: res.displayName || res.username || `User ${res.fid}`,
-        })
-      }
-    },
-    onError: (err?: Error) => {
-      console.error('❌ Farcaster sign-in error:', err)
-    },
-  })
 
   // Check for mini app context
   useEffect(() => {
@@ -66,15 +35,7 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
     return () => clearTimeout(timeoutId)
   }, [onAuth])
 
-  // Trigger sign-in flow on mount for web users
-  useEffect(() => {
-    if (!isMiniApp && !url && !isSuccess && !channelToken) {
-      console.log('🔄 Initiating Farcaster sign-in...')
-      signIn()
-    }
-  }, [isMiniApp, url, isSuccess, channelToken, signIn])
-
-  // Don't show auth button if already authenticated in mini app
+  // Already authenticated in mini app
   if (isMiniApp) {
     return (
       <div className="text-center">
@@ -89,77 +50,55 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
     )
   }
 
-  if (isSuccess && data) {
-    return (
-      <div className="text-center">
-        <div className="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg flex items-center justify-center gap-2">
-          <span className="text-xl">🟣</span>
-          Connected as {data.username || `User ${data.fid}`}
-        </div>
-        <button
-          onClick={signOut}
-          className="mt-3 text-xs text-red-400 hover:text-red-300 underline"
-        >
-          Sign out
-        </button>
-      </div>
-    )
-  }
-
   return (
     <div className="text-center">
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-purple-300 mb-2">Sign in with Farcaster</h3>
-        {url ? (
-          <p className="text-sm text-gray-400 mb-4">Scan this QR code with your phone</p>
-        ) : (
-          <p className="text-sm text-gray-400 mb-4">Generating sign-in QR code...</p>
-        )}
+        <h3 className="text-lg font-bold text-purple-300 mb-2">Play with Farcaster</h3>
+        <p className="text-sm text-gray-400 mb-4">Get exclusive benefits when you play through Farcaster!</p>
       </div>
 
-      {url ? (
-        <div className="flex flex-col items-center">
-          <div className="bg-white p-4 rounded-lg mb-4">
-            {/* Use QR code API service to generate QR code from URL */}
-            <img 
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(url)}`}
-              alt="Farcaster Sign-In QR Code" 
-              className="w-64 h-64"
-            />
+      <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-xl border border-purple-700/30 p-6 mb-4">
+        <div className="text-xl mb-3">🟣</div>
+        <h4 className="text-lg font-bold text-purple-100 mb-3">Farcaster Player Benefits</h4>
+        <ul className="text-left text-sm text-purple-200 space-y-2 mb-4">
+          <li className="flex items-center gap-2">
+            <span className="text-green-400">✓</span>
+            <span>Start with 25 PIE (instead of 15)</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="text-green-400">✓</span>
+            <span>5 plays per day (instead of 3)</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="text-green-400">✓</span>
+            <span>Automatic authentication</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="text-green-400">✓</span>
+            <span>Seamless gameplay in Warpcast</span>
+          </li>
+        </ul>
+
+        <a 
+          href="https://farcaster.xyz/miniapps/awTRIJ40JIaG/dagda-play"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-lg transition-all transform hover:scale-105"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-xl">🚀</span>
+            <span>Open Dagda Play in Farcaster</span>
           </div>
-          <p className="text-xs text-gray-400 mb-2">
-            Open Warpcast and scan this code to sign in
-          </p>
-          <a 
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-purple-400 hover:text-purple-300 underline"
-          >
-            Or click here to sign in on mobile
-          </a>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center">
-          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-          <p className="text-sm text-gray-400">Loading...</p>
-          {isError && (
-            <p className="text-xs text-red-400 mt-2">
-              Error: {error?.message || 'Failed to initialize sign-in'}
-            </p>
-          )}
-        </div>
-      )}
+        </a>
 
-      <div className="mt-4 text-xs text-green-400">
-        Get +10 bonus PIE and 5 plays/day with Farcaster!
+        <p className="text-xs text-gray-400 mt-3">
+          Opens in Warpcast mini-app • Instant access with your Farcaster account
+        </p>
       </div>
 
-      {channelToken && (
-        <div className="mt-2 text-xs text-gray-500">
-          Waiting for authentication...
-        </div>
-      )}
+      <div className="text-xs text-gray-500">
+        Or connect with a wallet above to play with standard benefits
+      </div>
     </div>
   )
 }

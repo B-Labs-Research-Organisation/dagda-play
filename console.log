@@ -1,36 +1,16 @@
-� Auto-generating Farcaster sign-in URL... c5bfca5f59e5c466.js:1:24860
-Context check: 
+ontext check: 
 Object { miniApp: undefined, farcasterContext: undefined }
-c5bfca5f59e5c466.js:1:25029
-Is in iframe: false c5bfca5f59e5c466.js:1:25387
-Web context detected, will offer Farcaster authentication c5bfca5f59e5c466.js:1:25926
-🔍 FarcasterProvider useEffect running a2c6a2d7affda0ab.js:1:57911
-🔍 Window exists: true a2c6a2d7affda0ab.js:1:57965
+84f3b664dcf3cb7e.js:1:24855
+🔄 Initiating Farcaster sign-in... 84f3b664dcf3cb7e.js:1:25270
+� Calling sdk.actions.ready() synchronously... 31a3cbb98af6bc93.js:1:418831
+✅ sdk.actions.ready() called successfully 31a3cbb98af6bc93.js:1:418912
+✅ Context loaded: undefined 31a3cbb98af6bc93.js:1:419060
 🔧 Creating AuthKit config: 
-Object { domain: "dagda-play.vercel.app", siweUri: "https://dagda-play.vercel.app" }
-a2c6a2d7affda0ab.js:1:59358
+Object { rpcUrl: "https://mainnet.optimism.io", domain: "dagda-play.vercel.app", siweUri: "https://dagda-play.vercel.app", relay: "https://relay.farcaster.xyz" }
+31a3cbb98af6bc93.js:1:421144
 🔧 Creating AuthKit config: 
-Object { domain: "dagda-play.vercel.app", siweUri: "https://dagda-play.vercel.app" }
-a2c6a2d7affda0ab.js:1:59358
-� Auto-generating Farcaster sign-in URL... c5bfca5f59e5c466.js:1:24860
-✅ SDK module loaded: 
-Object { AddMiniApp: Getter, Back: Getter, ComposeCast: Getter, Context: Getter, DEFAULT_READY_OPTIONS: Getter, Errors: Getter, Ethereum: Getter, Haptics: Getter, Manifest: Getter, OpenMiniApp: Getter, … }
-a2c6a2d7affda0ab.js:1:58100
-✅ SDK object: 
-Object { eventNames: BoundFunctionObject, listenerCount: BoundFunctionObject, listeners: BoundFunctionObject, addListener: BoundFunctionObject, emit: BoundFunctionObject, off: BoundFunctionObject, on: BoundFunctionObject, once: BoundFunctionObject, removeAllListeners: BoundFunctionObject, removeListener: BoundFunctionObject, … }
-a2c6a2d7affda0ab.js:1:58157
-✅ SDK.actions: 
-Object { setPrimaryButton: Proxy, ready: async ready(), close: Proxy, viewCast: Proxy, viewProfile: Proxy, openMiniApp: Proxy, signIn: async signIn(e), openUrl: openUrl(e), addFrame: async u7(), addMiniApp: async u7()
-, … }
-a2c6a2d7affda0ab.js:1:58188
-✅ SDK.actions.ready: 
-async function ready()
-a2c6a2d7affda0ab.js:1:58243
-🚀 Calling sdk.actions.ready()... a2c6a2d7affda0ab.js:1:58376
-✅✅✅ sdk.actions.ready() CALLED SUCCESSFULLY a2c6a2d7affda0ab.js:1:58456
-✅ Context loaded: undefined a2c6a2d7affda0ab.js:1:58544
+Object { rpcUrl: "https://mainnet.optimism.io", domain: "dagda-play.vercel.app", siweUri: "https://dagda-play.vercel.app", relay: "https://relay.farcaster.xyz" }
+31a3cbb98af6bc93.js:1:421144
+🔄 Initiating Farcaster sign-in... 84f3b664dcf3cb7e.js:1:25270
 Context check: 
 Object { miniApp: true, farcasterContext: undefined }
-c5bfca5f59e5c466.js:1:25029
-Is in iframe: false c5bfca5f59e5c466.js:1:25387
-Web context detected, will offer Farcaster authentication
