@@ -256,7 +256,7 @@ export default function Home() {
 
         {/* Blockchain Features Preview */}
         <div className="mt-16 text-center">
-          <h3 className="text-2xl font-bold text-green-100 mb-8">🔗 Coming Soon: Blockchain Features</h3>
+          <h3 className="text-2xl font-bold text-green-100 mb-8">🔗 Coming Soon</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6">
               <div className="text-3xl mb-3">🏆</div>
