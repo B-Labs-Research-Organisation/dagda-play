@@ -75,6 +75,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+        style={{ backgroundColor: 'var(--background)', backgroundImage: 'var(--background-gradient)' }}
       >
         <Providers>
           {children}

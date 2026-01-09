@@ -26,7 +26,7 @@ export default function Home() {
 
   const loadUserData = useCallback(async () => {
     try {
-      // Use wallet address OR Farcaster FID as user ID
+      // Use wallet address OR FARCaster FID as user ID
       let userId: string
       let username: string
 
@@ -60,7 +60,7 @@ export default function Home() {
       // Load user balance and limits for wallet users
       loadUserData()
     }
-    // Note: Don't auto-load for Farcaster users here - it's handled in handleFarcasterAuth
+    // Note: Don't auto-load for FARCaster users here - it's handled in handleFarcasterAuth
   }, [isConnected, address, loadUserData])
 
   const handleFarcasterAuth = async (profile: { fid: number; username: string; displayName: string }) => {
@@ -68,10 +68,10 @@ export default function Home() {
     setIsFarcasterUser(true)
     setFarcasterProfile(profile)
 
-    // Apply Farcaster incentives with the profile data
+    // Apply FARCaster incentives with the profile data
     await applyFarcasterIncentives(profile)
     
-    // Load user data to sync with database (this should respect the Farcaster bonus we just applied)
+    // Load user data to sync with database (this should respect the FARCaster bonus we just applied)
     await loadUserDataForFarcaster(profile)
   }
 
@@ -84,13 +84,13 @@ export default function Home() {
       const userBalance = await balanceManager.getBalance(userId, username)
       setBalance(userBalance)
 
-      // For Farcaster users, always set 5 plays (don't load from database)
+      // For FARCaster users, always set 5 plays (don't load from database)
       setDailyLimits({
         coinflip: { remaining: 5, resetsIn: '24h 0m' },
         randomizer: { remaining: 5, resetsIn: '24h 0m' }
       })
     } catch (error) {
-      console.error('Error loading Farcaster user data:', error)
+      console.error('Error loading FARCaster user data:', error)
     }
   }
 
@@ -99,7 +99,7 @@ export default function Home() {
       // Use the passed profile or fallback to state
       const farcasterData = profile || farcasterProfile
       
-      // Use wallet address OR Farcaster FID as user ID
+      // Use wallet address OR FARCaster FID as user ID
       let userId: string
       let username: string
 
@@ -110,13 +110,13 @@ export default function Home() {
         userId = `fid-${farcasterData.fid}`
         username = farcasterData.username || `User-${farcasterData.fid}`
       } else {
-        console.log('No user ID available for Farcaster incentives')
+        console.log('No user ID available for FARCaster incentives')
         return // No user ID available
       }
 
-      console.log('Applying Farcaster incentives for:', { userId, username })
+      console.log('Applying FARCaster incentives for:', { userId, username })
 
-      // Give Farcaster users bonus PIE (25 total: 15 starting + 10 bonus)
+      // Give FARCaster users bonus PIE (25 total: 15 starting + 10 bonus)
       const currentBalance = await balanceManager.getBalance(userId, username)
       console.log('Current balance:', currentBalance)
       
@@ -129,14 +129,14 @@ export default function Home() {
         setBalance(currentBalance)
       }
 
-      // Update limits for Farcaster users (5 plays instead of 3)
+      // Update limits for FARCaster users (5 plays instead of 3)
       setDailyLimits({
         coinflip: { remaining: 5, resetsIn: '24h 0m' },
         randomizer: { remaining: 5, resetsIn: '24h 0m' }
       })
-      console.log('✅ Farcaster limits applied: 5 plays each')
+      console.log('✅ FARCaster limits applied: 5 plays each')
     } catch (error) {
-      console.error('Error applying Farcaster incentives:', error)
+      console.error('Error applying FARCaster incentives:', error)
     }
   }
 
@@ -146,23 +146,34 @@ export default function Home() {
     setCurrentGame(null)
   }
 
-  // Show welcome screen if not connected via wallet AND not authenticated via Farcaster
+  // Show welcome screen if not connected via wallet AND not authenticated via FARCaster
   if (!isConnected && !isFarcasterUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg max-w-md">
-          <h2 className="text-3xl font-bold text-green-900 mb-6">🏰 Welcome to Dagda Play</h2>
-          <p className="text-green-800 mb-8">Connect your wallet to start playing! Or</p>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div 
+          className="text-center p-8 rounded-xl border max-w-md"
+          style={{ 
+            backgroundColor: 'var(--card-bg)',
+            borderColor: 'var(--card-border)',
+            boxShadow: '0 4px 6px var(--shadow)'
+          }}
+        >
+          <h2 className="text-3xl font-bold mb-6" style={{ color: 'var(--card-text)' }}>
+            🏰 Welcome to Dagda Play
+          </h2>
+          <p className="mb-8" style={{ color: 'var(--foreground)' }}>
+            Connect your wallet to start playing! Or
+          </p>
 
-          {/* Farcaster Auth Option */}
+          {/* FARCaster Auth Option */}
           <div className="mb-6">
             <FarcasterAuth onAuth={handleFarcasterAuth} />
           </div>
 
-          <div className="text-sm text-green-700 space-y-2">
+          <div className="text-sm space-y-2" style={{ color: 'var(--text-muted)' }}>
             <p>🎮 Play games • 🪙 Earn PIE Points • 🏆 Collect achievements</p>
-            <p className="text-yellow-600 font-semibold">
-              ✨ Farcaster users get +10 bonus PIE and 5 plays/day!
+            <p style={{ color: 'var(--accent-yellow)' }} className="font-semibold">
+              ✨ FARCaster users get +10 bonus PIE and 5 plays/day!
             </p>
           </div>
         </div>
@@ -179,53 +190,89 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Welcome Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-green-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>
             🏰 Welcome to Dagda Play
           </h1>
-          <p className="text-xl text-green-700">
+          <p className="text-lg md:text-xl" style={{ color: 'var(--text-muted)' }}>
             The Irish God of Games awaits your challenge!
           </p>
         </div>
 
         {/* User Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6 text-center">
-            <div className="text-3xl font-bold text-green-900 mb-2">💰 {balance}</div>
-            <div className="text-green-700">PIE Balance</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12">
+          <div 
+            className="rounded-xl p-6 text-center"
+            style={{ 
+              backgroundColor: 'var(--card-bg)',
+              borderColor: 'var(--card-border)',
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              boxShadow: '0 4px 6px var(--shadow)'
+            }}
+          >
+            <div className="text-3xl font-bold mb-2" style={{ color: 'var(--card-text)' }}>💰 {balance}</div>
+            <div style={{ color: 'var(--text-muted)' }}>PIE Balance</div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6 text-center">
-            <div className="text-3xl font-bold text-green-900 mb-2">
+          <div 
+            className="rounded-xl p-6 text-center"
+            style={{ 
+              backgroundColor: 'var(--card-bg)',
+              borderColor: 'var(--card-border)',
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              boxShadow: '0 4px 6px var(--shadow)'
+            }}
+          >
+            <div className="text-3xl font-bold mb-2" style={{ color: 'var(--card-text)' }}>
               🪙 {dailyLimits.coinflip.remaining}
             </div>
-            <div className="text-green-700">Coinflip Plays Left</div>
-            <div className="text-xs text-green-600 mt-1">
+            <div style={{ color: 'var(--text-muted)' }}>Coinflip Plays Left</div>
+            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.8 }}>
               Resets in: {dailyLimits.coinflip.resetsIn}
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6 text-center">
-            <div className="text-3xl font-bold text-green-900 mb-2">
+          <div 
+            className="rounded-xl p-6 text-center"
+            style={{ 
+              backgroundColor: 'var(--card-bg)',
+              borderColor: 'var(--card-border)',
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              boxShadow: '0 4px 6px var(--shadow)'
+            }}
+          >
+            <div className="text-3xl font-bold mb-2" style={{ color: 'var(--card-text)' }}>
               🎲 {dailyLimits.randomizer.remaining}
             </div>
-            <div className="text-green-700">Randomizer Plays Left</div>
-            <div className="text-xs text-green-600 mt-1">
+            <div style={{ color: 'var(--text-muted)' }}>Randomizer Plays Left</div>
+            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.8 }}>
               Resets in: {dailyLimits.randomizer.resetsIn}
             </div>
           </div>
         </div>
 
         {/* Game Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
           {/* Coinflip Game */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-8 text-center hover:border-green-400 transition-colors">
+          <div 
+            className="rounded-xl p-8 text-center transition-colors"
+            style={{ 
+              backgroundColor: 'var(--card-bg)',
+              borderColor: 'var(--card-border)',
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              boxShadow: '0 4px 6px var(--shadow)'
+            }}
+          >
             <div className="text-6xl mb-4">🪙</div>
-            <h2 className="text-2xl font-bold text-green-900 mb-4">Coinflip</h2>
-            <p className="text-green-700 mb-6">
+            <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--card-text)' }}>Coinflip</h2>
+            <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
               Bet 5 PIE and guess heads or tails. Win 10 PIE if you're correct!
             </p>
             <button
@@ -238,10 +285,19 @@ export default function Home() {
           </div>
 
           {/* Randomizer Game */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-8 text-center hover:border-green-400 transition-colors">
+          <div 
+            className="rounded-xl p-8 text-center transition-colors"
+            style={{ 
+              backgroundColor: 'var(--card-bg)',
+              borderColor: 'var(--card-border)',
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              boxShadow: '0 4px 6px var(--shadow)'
+            }}
+          >
             <div className="text-6xl mb-4">🎲</div>
-            <h2 className="text-2xl font-bold text-green-900 mb-4">Randomizer</h2>
-            <p className="text-green-700 mb-6">
+            <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--card-text)' }}>Randomizer</h2>
+            <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
               Try your luck! Win up to 10 PIE or lose up to 10 PIE in this thrilling game of chance.
             </p>
             <button
@@ -256,28 +312,55 @@ export default function Home() {
 
         {/* Blockchain Features Preview */}
         <div className="mt-16 text-center">
-          <h3 className="text-2xl font-bold text-green-900 mb-8">🔗 Coming Soon</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6">
+          <h3 className="text-2xl font-bold mb-8" style={{ color: 'var(--foreground)' }}>🔗 Coming Soon</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
+            <div 
+              className="rounded-xl p-6"
+              style={{ 
+                backgroundColor: 'var(--card-bg)',
+                borderColor: 'var(--card-border)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                boxShadow: '0 4px 6px var(--shadow)'
+              }}
+            >
               <div className="text-3xl mb-3">🏆</div>
-              <h4 className="text-lg font-bold text-green-900 mb-2">Achievement NFTs</h4>
-              <p className="text-green-700 text-sm">
+              <h4 className="text-lg font-bold mb-2" style={{ color: 'var(--card-text)' }}>Achievement NFTs</h4>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 Earn unique NFTs for your gaming milestones and achievements
               </p>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6">
+            <div 
+              className="rounded-xl p-6"
+              style={{ 
+                backgroundColor: 'var(--card-bg)',
+                borderColor: 'var(--card-border)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                boxShadow: '0 4px 6px var(--shadow)'
+              }}
+            >
               <div className="text-3xl mb-3">💎</div>
-              <h4 className="text-lg font-bold text-green-900 mb-2">PIE Points</h4>
-              <p className="text-green-700 text-sm">
+              <h4 className="text-lg font-bold mb-2" style={{ color: 'var(--card-text)' }}>PIE Points</h4>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 Earn PIE & get exlusive rewards
               </p>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6">
+            <div 
+              className="rounded-xl p-6"
+              style={{ 
+                backgroundColor: 'var(--card-bg)',
+                borderColor: 'var(--card-border)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                boxShadow: '0 4px 6px var(--shadow)'
+              }}
+            >
               <div className="text-3xl mb-3">🏅</div>
-              <h4 className="text-lg font-bold text-green-900 mb-2">Leaderboards</h4>
-              <p className="text-green-700 text-sm">
+              <h4 className="text-lg font-bold mb-2" style={{ color: 'var(--card-text)' }}>Leaderboards</h4>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 Compete with other players on the global leaderboard
               </p>
             </div>
