@@ -268,9 +268,9 @@ export default function Home() {
 
             <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6">
               <div className="text-3xl mb-3">💎</div>
-              <h4 className="text-lg font-bold text-green-100 mb-2">PIE Token</h4>
+              <h4 className="text-lg font-bold text-green-100 mb-2">PIE Points</h4>
               <p className="text-green-300 text-sm">
-                Cash out your PIE earnings to your wallet as ERC-20 tokens
+                Earn PIE & get exlusive rewards
               </p>
             </div>
 

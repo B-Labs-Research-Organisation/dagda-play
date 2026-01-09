@@ -17,11 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Dagda Play - Irish God of Games",
   description: "Play Coinflip & Randomizer games! Earn PIE tokens and collect achievements. Farcaster users get bonus rewards!",
-  keywords: ["gaming", "blockchain", "farcaster", "mini app", "games", "PIE tokens"],
+  keywords: ["gaming", "blockchain", "farcaster", "mini app", "games", "PIE points"],
   authors: [{ name: "Dagda Play" }],
   openGraph: {
     title: "🏰 Dagda Play - Play & Earn PIE!",
-    description: "Irish God of Games awaits! Coinflip, Randomizer, and exclusive Farcaster rewards.",
+    description: "Irish God of Games awaits! Coinflip, Randomizer, and exclusive rewards.",
     type: "website",
     images: [
       {
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "🏰 Dagda Play",
-    description: "Play games, earn PIE tokens! Farcaster users get bonus rewards.",
+    description: "Play games, earn PIE Points! Farcaster users get bonus rewards.",
     images: ["/og-image.png"],
   },
   other: {
