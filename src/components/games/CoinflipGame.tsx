@@ -117,27 +117,27 @@ export function CoinflipGame({ onComplete, balance, farcasterProfile }: Coinflip
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-900 via-yellow-800 to-orange-900 p-8">
+    <div className="min-h-screen bg-green-50 p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <button
             onClick={backToMain}
-            className="mb-4 text-green-300 hover:text-green-100 flex items-center gap-2"
+            className="mb-4 text-green-700 hover:text-green-900 flex items-center gap-2"
           >
             ← Back to Games
           </button>
-          <h1 className="text-4xl font-bold text-yellow-100 mb-2">🪙 Coinflip Challenge</h1>
-          <p className="text-yellow-200">Bet 5 PIE and guess correctly to win 10 PIE!</p>
+          <h1 className="text-4xl font-bold text-green-900 mb-2">🪙 Coinflip Challenge</h1>
+          <p className="text-green-700">Bet 5 PIE and guess correctly to win 10 PIE!</p>
         </div>
 
         {/* Balance Display */}
-        <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-yellow-700/30 p-6 mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6 mb-8">
           <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-100">
+            <div className="text-2xl font-bold text-green-900">
               Current Balance: {newBalance} PIE
             </div>
-            <div className="text-yellow-300 text-sm mt-1">
+            <div className="text-green-600 text-sm mt-1">
               {gameState === 'betting' && 'Choose heads or tails to play'}
               {gameState === 'flipping' && 'Flipping the coin...'}
               {gameState === 'result' && `New Balance: ${newBalance} PIE`}
@@ -146,12 +146,12 @@ export function CoinflipGame({ onComplete, balance, farcasterProfile }: Coinflip
         </div>
 
         {/* Coin Display */}
-        <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-yellow-700/30 p-8 mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-8 mb-8">
           <div className="text-center">
             <div
-              className={`w-32 h-32 mx-auto mb-4 rounded-full border-4 border-yellow-400 flex items-center justify-center text-6xl transition-transform duration-1000 ${
+              className={`w-32 h-32 mx-auto mb-4 rounded-full border-4 border-yellow-500 flex items-center justify-center text-6xl transition-transform duration-1000 ${
                 isFlipping ? 'animate-spin' : ''
-              } ${result === 'heads' ? 'bg-yellow-300 text-yellow-900' : 'bg-yellow-700 text-yellow-100'}`}
+              } ${result === 'heads' ? 'bg-yellow-300 text-yellow-900' : 'bg-yellow-200 text-yellow-800'}`}
               style={{
                 transformStyle: 'preserve-3d',
                 animation: isFlipping ? 'flip 2s ease-in-out' : 'none'
@@ -161,7 +161,7 @@ export function CoinflipGame({ onComplete, balance, farcasterProfile }: Coinflip
             </div>
 
             {gameState === 'result' && (
-              <div className="text-xl font-bold text-yellow-100">
+              <div className="text-xl font-bold text-green-900">
                 {result === 'heads' ? 'HEADS' : 'TAILS'}
               </div>
             )}
@@ -175,8 +175,8 @@ export function CoinflipGame({ onComplete, balance, farcasterProfile }: Coinflip
               onClick={() => handleChoice('heads')}
               className={`p-6 rounded-xl border-2 transition-all transform hover:scale-105 ${
                 selectedChoice === 'heads'
-                  ? 'border-yellow-400 bg-yellow-600 text-yellow-100'
-                  : 'border-yellow-600 bg-black/20 text-yellow-200 hover:border-yellow-500'
+                  ? 'border-yellow-500 bg-yellow-100 text-yellow-900'
+                  : 'border-yellow-300 bg-white text-yellow-800 hover:border-yellow-500'
               }`}
             >
               <div className="text-4xl mb-2">🪙</div>
@@ -188,8 +188,8 @@ export function CoinflipGame({ onComplete, balance, farcasterProfile }: Coinflip
               onClick={() => handleChoice('tails')}
               className={`p-6 rounded-xl border-2 transition-all transform hover:scale-105 ${
                 selectedChoice === 'tails'
-                  ? 'border-yellow-400 bg-yellow-600 text-yellow-100'
-                  : 'border-yellow-600 bg-black/20 text-yellow-200 hover:border-yellow-500'
+                  ? 'border-yellow-500 bg-yellow-100 text-yellow-900'
+                  : 'border-yellow-300 bg-white text-yellow-800 hover:border-yellow-500'
               }`}
             >
               <div className="text-4xl mb-2">⭐</div>
@@ -204,7 +204,7 @@ export function CoinflipGame({ onComplete, balance, farcasterProfile }: Coinflip
           <div className="text-center">
             <button
               onClick={playGame}
-              className="px-8 py-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
+              className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
             >
               Flip Coin! (Bet 5 PIE)
             </button>
@@ -215,10 +215,10 @@ export function CoinflipGame({ onComplete, balance, farcasterProfile }: Coinflip
         {message && (
           <div className={`text-center p-4 rounded-xl ${
             message.includes('won')
-              ? 'bg-green-900/50 border border-green-700 text-green-100'
+              ? 'bg-green-100 border border-green-300 text-green-800'
               : message.includes('lost')
-              ? 'bg-red-900/50 border border-red-700 text-red-100'
-              : 'bg-blue-900/50 border border-blue-700 text-blue-100'
+              ? 'bg-red-100 border border-red-300 text-red-800'
+              : 'bg-blue-100 border border-blue-300 text-blue-800'
           }`}>
             {message}
           </div>
@@ -237,9 +237,9 @@ export function CoinflipGame({ onComplete, balance, farcasterProfile }: Coinflip
         )}
 
         {/* Game Rules */}
-        <div className="mt-12 bg-black/10 backdrop-blur-sm rounded-xl border border-yellow-700/20 p-6">
-          <h3 className="text-lg font-bold text-yellow-100 mb-3">🎮 How to Play</h3>
-          <ul className="text-yellow-200 space-y-2 text-sm">
+        <div className="mt-12 bg-white/60 backdrop-blur-sm rounded-xl border border-green-200 p-6">
+          <h3 className="text-lg font-bold text-green-900 mb-3">🎮 How to Play</h3>
+          <ul className="text-green-700 space-y-2 text-sm">
             <li>• Choose either Heads or Tails</li>
             <li>• Bet 5 PIE to play</li>
             <li>• Win 10 PIE if you guess correctly</li>

@@ -74,7 +74,7 @@ export default function RootLayout({
         <FrameMeta />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
         <Providers>
           {children}

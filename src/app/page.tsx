@@ -150,18 +150,18 @@ export default function Home() {
   if (!isConnected && !isFarcasterUser) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center p-8 bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 max-w-md">
-          <h2 className="text-3xl font-bold text-green-100 mb-6">🏰 Welcome to Dagda Play</h2>
-          <p className="text-green-200 mb-8">Connect your wallet to start playing! Or</p>
+        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg max-w-md">
+          <h2 className="text-3xl font-bold text-green-900 mb-6">🏰 Welcome to Dagda Play</h2>
+          <p className="text-green-800 mb-8">Connect your wallet to start playing! Or</p>
 
           {/* Farcaster Auth Option */}
           <div className="mb-6">
             <FarcasterAuth onAuth={handleFarcasterAuth} />
           </div>
 
-          <div className="text-sm text-green-300 space-y-2">
+          <div className="text-sm text-green-700 space-y-2">
             <p>🎮 Play games • 🪙 Earn PIE Points • 🏆 Collect achievements</p>
-            <p className="text-yellow-400 font-semibold">
+            <p className="text-yellow-600 font-semibold">
               ✨ Farcaster users get +10 bonus PIE and 5 plays/day!
             </p>
           </div>
@@ -183,37 +183,37 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         {/* Welcome Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-green-100 mb-4">
+          <h1 className="text-5xl font-bold text-green-900 mb-4">
             🏰 Welcome to Dagda Play
           </h1>
-          <p className="text-xl text-green-200">
+          <p className="text-xl text-green-700">
             The Irish God of Games awaits your challenge!
           </p>
         </div>
 
         {/* User Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6 text-center">
-            <div className="text-3xl font-bold text-green-100 mb-2">💰 {balance}</div>
-            <div className="text-green-300">PIE Balance</div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6 text-center">
+            <div className="text-3xl font-bold text-green-900 mb-2">💰 {balance}</div>
+            <div className="text-green-700">PIE Balance</div>
           </div>
 
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6 text-center">
-            <div className="text-3xl font-bold text-green-100 mb-2">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6 text-center">
+            <div className="text-3xl font-bold text-green-900 mb-2">
               🪙 {dailyLimits.coinflip.remaining}
             </div>
-            <div className="text-green-300">Coinflip Plays Left</div>
-            <div className="text-xs text-green-400 mt-1">
+            <div className="text-green-700">Coinflip Plays Left</div>
+            <div className="text-xs text-green-600 mt-1">
               Resets in: {dailyLimits.coinflip.resetsIn}
             </div>
           </div>
 
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6 text-center">
-            <div className="text-3xl font-bold text-green-100 mb-2">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6 text-center">
+            <div className="text-3xl font-bold text-green-900 mb-2">
               🎲 {dailyLimits.randomizer.remaining}
             </div>
-            <div className="text-green-300">Randomizer Plays Left</div>
-            <div className="text-xs text-green-400 mt-1">
+            <div className="text-green-700">Randomizer Plays Left</div>
+            <div className="text-xs text-green-600 mt-1">
               Resets in: {dailyLimits.randomizer.resetsIn}
             </div>
           </div>
@@ -222,32 +222,32 @@ export default function Home() {
         {/* Game Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Coinflip Game */}
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-8 text-center hover:border-green-500/50 transition-colors">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-8 text-center hover:border-green-400 transition-colors">
             <div className="text-6xl mb-4">🪙</div>
-            <h2 className="text-2xl font-bold text-green-100 mb-4">Coinflip</h2>
-            <p className="text-green-200 mb-6">
+            <h2 className="text-2xl font-bold text-green-900 mb-4">Coinflip</h2>
+            <p className="text-green-700 mb-6">
               Bet 5 PIE and guess heads or tails. Win 10 PIE if you're correct!
             </p>
             <button
               onClick={() => setCurrentGame('coinflip')}
               disabled={dailyLimits.coinflip.remaining === 0}
-              className="w-full py-4 px-8 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none"
+              className="w-full py-4 px-8 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none"
             >
               {dailyLimits.coinflip.remaining === 0 ? 'Daily Limit Reached' : 'Play Coinflip'}
             </button>
           </div>
 
           {/* Randomizer Game */}
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-8 text-center hover:border-green-500/50 transition-colors">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-8 text-center hover:border-green-400 transition-colors">
             <div className="text-6xl mb-4">🎲</div>
-            <h2 className="text-2xl font-bold text-green-100 mb-4">Randomizer</h2>
-            <p className="text-green-200 mb-6">
+            <h2 className="text-2xl font-bold text-green-900 mb-4">Randomizer</h2>
+            <p className="text-green-700 mb-6">
               Try your luck! Win up to 10 PIE or lose up to 10 PIE in this thrilling game of chance.
             </p>
             <button
               onClick={() => setCurrentGame('randomizer')}
               disabled={dailyLimits.randomizer.remaining === 0}
-              className="w-full py-4 px-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none"
+              className="w-full py-4 px-8 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none"
             >
               {dailyLimits.randomizer.remaining === 0 ? 'Daily Limit Reached' : 'Play Randomizer'}
             </button>
@@ -256,28 +256,28 @@ export default function Home() {
 
         {/* Blockchain Features Preview */}
         <div className="mt-16 text-center">
-          <h3 className="text-2xl font-bold text-green-100 mb-8">🔗 Coming Soon</h3>
+          <h3 className="text-2xl font-bold text-green-900 mb-8">🔗 Coming Soon</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6">
               <div className="text-3xl mb-3">🏆</div>
-              <h4 className="text-lg font-bold text-green-100 mb-2">Achievement NFTs</h4>
-              <p className="text-green-300 text-sm">
+              <h4 className="text-lg font-bold text-green-900 mb-2">Achievement NFTs</h4>
+              <p className="text-green-700 text-sm">
                 Earn unique NFTs for your gaming milestones and achievements
               </p>
             </div>
 
-            <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6">
               <div className="text-3xl mb-3">💎</div>
-              <h4 className="text-lg font-bold text-green-100 mb-2">PIE Points</h4>
-              <p className="text-green-300 text-sm">
+              <h4 className="text-lg font-bold text-green-900 mb-2">PIE Points</h4>
+              <p className="text-green-700 text-sm">
                 Earn PIE & get exlusive rewards
               </p>
             </div>
 
-            <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-green-700/30 p-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6">
               <div className="text-3xl mb-3">🏅</div>
-              <h4 className="text-lg font-bold text-green-100 mb-2">Leaderboards</h4>
-              <p className="text-green-300 text-sm">
+              <h4 className="text-lg font-bold text-green-900 mb-2">Leaderboards</h4>
+              <p className="text-green-700 text-sm">
                 Compete with other players on the global leaderboard
               </p>
             </div>

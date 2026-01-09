@@ -138,27 +138,27 @@ export function RandomizerGame({ onComplete, balance, farcasterProfile }: Random
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-8">
+    <div className="min-h-screen bg-green-50 p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <button
             onClick={backToMain}
-            className="mb-4 text-green-300 hover:text-green-100 flex items-center gap-2"
+            className="mb-4 text-green-700 hover:text-green-900 flex items-center gap-2"
           >
             ← Back to Games
           </button>
-          <h1 className="text-4xl font-bold text-purple-100 mb-2">🎲 Randomizer</h1>
-          <p className="text-purple-200">Test your luck! Win big or lose big in this thrilling game of chance!</p>
+          <h1 className="text-4xl font-bold text-green-900 mb-2">🎲 Randomizer</h1>
+          <p className="text-green-700">Test your luck! Win big or lose big in this thrilling game of chance!</p>
         </div>
 
         {/* Balance Display */}
-        <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-purple-700/30 p-6 mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-6 mb-8">
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-100">
+            <div className="text-2xl font-bold text-green-900">
               Current Balance: {newBalance} PIE
             </div>
-            <div className="text-purple-300 text-sm mt-1">
+            <div className="text-green-600 text-sm mt-1">
               {gameState === 'ready' && 'Click spin to test your luck!'}
               {gameState === 'spinning' && 'Spinning the wheel of fortune...'}
               {gameState === 'result' && `New Balance: ${newBalance} PIE`}
@@ -167,10 +167,10 @@ export function RandomizerGame({ onComplete, balance, farcasterProfile }: Random
         </div>
 
         {/* Slot Machine Display */}
-        <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-purple-700/30 p-8 mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-green-200 shadow-lg p-8 mb-8">
           <div className="text-center">
             {/* Slot Machine Frame */}
-            <div className="inline-block bg-gradient-to-b from-yellow-600 to-yellow-800 p-4 rounded-lg border-4 border-yellow-400">
+            <div className="inline-block bg-gradient-to-b from-yellow-400 to-yellow-600 p-4 rounded-lg border-4 border-yellow-500 shadow-lg">
               <div className="flex gap-2 justify-center">
                 {slots.map((slot, index) => (
                   <div
@@ -186,8 +186,8 @@ export function RandomizerGame({ onComplete, balance, farcasterProfile }: Random
 
               {/* Slot Machine Lever */}
               <div className="flex justify-center mt-4">
-                <div className="w-2 h-16 bg-gray-600 rounded-full relative">
-                  <div className={`w-4 h-4 bg-red-600 rounded-full absolute -right-1 transition-all duration-300 ${
+                <div className="w-2 h-16 bg-gray-500 rounded-full relative">
+                  <div className={`w-4 h-4 bg-red-500 rounded-full absolute -right-1 transition-all duration-300 ${
                     isSpinning ? '-top-1' : 'top-2'
                   }`}></div>
                 </div>
@@ -196,7 +196,7 @@ export function RandomizerGame({ onComplete, balance, farcasterProfile }: Random
 
             {/* Result Display */}
             {result && (
-              <div className={`mt-6 p-4 rounded-xl bg-gradient-to-r ${result.color} text-white text-center`}>
+              <div className={`mt-6 p-4 rounded-xl bg-gradient-to-r ${result.color} text-white text-center shadow-lg`}>
                 <div className="text-4xl mb-2">{result.emoji}</div>
                 <div className="font-bold text-lg">{result.message}</div>
               </div>
@@ -209,7 +209,7 @@ export function RandomizerGame({ onComplete, balance, farcasterProfile }: Random
           <div className="text-center">
             <button
               onClick={playGame}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl animate-pulse"
+              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
             >
               🎰 SPIN (Bet 5 PIE)
             </button>
@@ -218,7 +218,7 @@ export function RandomizerGame({ onComplete, balance, farcasterProfile }: Random
 
         {/* Result Message */}
         {message && !result && (
-          <div className="text-center p-4 rounded-xl bg-blue-900/50 border border-blue-700 text-blue-100">
+          <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300 text-blue-800">
             {message}
           </div>
         )}
@@ -236,11 +236,11 @@ export function RandomizerGame({ onComplete, balance, farcasterProfile }: Random
         )}
 
         {/* Possible Outcomes */}
-        <div className="mt-12 bg-black/10 backdrop-blur-sm rounded-xl border border-purple-700/20 p-6">
-          <h3 className="text-lg font-bold text-purple-100 mb-3">🎲 Possible Outcomes</h3>
+        <div className="mt-12 bg-white/60 backdrop-blur-sm rounded-xl border border-green-200 p-6">
+          <h3 className="text-lg font-bold text-green-900 mb-3">🎲 Possible Outcomes</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             {outcomes.map((outcome, index) => (
-              <div key={index} className={`p-3 rounded-lg bg-gradient-to-r ${outcome.color} text-white`}>
+              <div key={index} className={`p-3 rounded-lg bg-gradient-to-r ${outcome.color} text-white shadow-sm`}>
                 <span className="font-bold">{outcome.emoji}</span> {outcome.message}
               </div>
             ))}
@@ -248,9 +248,9 @@ export function RandomizerGame({ onComplete, balance, farcasterProfile }: Random
         </div>
 
         {/* Game Rules */}
-        <div className="mt-6 bg-black/10 backdrop-blur-sm rounded-xl border border-purple-700/20 p-6">
-          <h3 className="text-lg font-bold text-purple-100 mb-3">🎮 How to Play</h3>
-          <ul className="text-purple-200 space-y-2 text-sm">
+        <div className="mt-6 bg-white/60 backdrop-blur-sm rounded-xl border border-green-200 p-6">
+          <h3 className="text-lg font-bold text-green-900 mb-3">🎮 How to Play</h3>
+          <ul className="text-green-700 space-y-2 text-sm">
             <li>• Bet 5 PIE to spin the randomizer</li>
             <li>• 5 possible outcomes ranging from +10 PIE to -10 PIE</li>
             <li>• Watch the slots spin and reveal your fate!</li>

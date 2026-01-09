@@ -39,12 +39,12 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
   if (isMiniApp) {
     return (
       <div className="text-center">
-        <div className="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg flex items-center justify-center gap-2">
+        <div className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-lg flex items-center justify-center gap-2">
           <span className="text-xl">🟣</span>
-          Connected to Farcaster
+          Connected to Farrrrcaster
         </div>
-        <div className="mt-3 text-xs text-green-400">
-          Playing as Farcaster user - 5 plays/day!
+        <div className="mt-3 text-xs text-green-600">
+          Playing as Farrrrcaster user - 5 plays/day!
         </div>
       </div>
     )
@@ -53,28 +53,28 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
   return (
     <div className="text-center">
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-purple-300 mb-2">Play in Farcaster</h3>
-        <p className="text-sm text-gray-400 mb-4">Get exclusive benefits when you play through Farcaster!</p>
+        <h3 className="text-lg font-bold text-purple-700 mb-2">Play in Farrrrcaster</h3>
+        <p className="text-sm text-gray-600 mb-4">Get exclusive benefits when you play through Farrrrcaster!</p>
       </div>
 
-      <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-xl border border-purple-700/30 p-6 mb-4">
+      <div className="bg-white/80 rounded-xl border border-purple-200 shadow-lg p-6 mb-4">
         <div className="text-xl mb-3">🟣</div>
-        <h4 className="text-lg font-bold text-purple-100 mb-3">Farcaster Player Benefits</h4>
-        <ul className="text-left text-sm text-purple-200 space-y-2 mb-4">
+        <h4 className="text-lg font-bold text-purple-800 mb-3">Farrrrcaster Player Benefits</h4>
+        <ul className="text-left text-sm text-gray-700 space-y-2 mb-4">
           <li className="flex items-center gap-2">
-            <span className="text-green-400">✓</span>
+            <span className="text-green-500">✓</span>
             <span>Start with 25 PIE (instead of 15)</span>
           </li>
           <li className="flex items-center gap-2">
-            <span className="text-green-400">✓</span>
+            <span className="text-green-500">✓</span>
             <span>5 plays per day (instead of 3)</span>
           </li>
           <li className="flex items-center gap-2">
-            <span className="text-green-400">✓</span>
+            <span className="text-green-500">✓</span>
             <span>Automatic authentication</span>
           </li>
           <li className="flex items-center gap-2">
-            <span className="text-green-400">✓</span>
+            <span className="text-green-500">✓</span>
             <span>Seamless gameplay</span>
           </li>
         </ul>
@@ -83,16 +83,16 @@ export function FarcasterAuth({ onAuth }: FarcasterAuthProps) {
           href="https://farcaster.xyz/miniapps/awTRIJ40JIaG/dagda-play"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-lg transition-all transform hover:scale-105"
+          className="inline-block w-full py-3 px-6 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold rounded-lg transition-all transform hover:scale-105"
         >
           <div className="flex items-center justify-center gap-2">
             <span className="text-xl">🚀</span>
-            <span>Open Dagda Play in Farcaster</span>
+            <span>Open Dagda Play in Farrrrcaster</span>
           </div>
         </a>
 
-        <p className="text-xs text-gray-400 mt-3">
-          Opens as a Farcaster mini-app • Instant access with your Farcaster account
+        <p className="text-xs text-gray-500 mt-3">
+          Opens as a Farrrrcaster mini-app • Instant access with your Farrrrcaster account
         </p>
       </div>
 
