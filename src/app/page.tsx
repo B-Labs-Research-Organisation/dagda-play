@@ -13,7 +13,7 @@ type GameType = 'emerald-flip' | 'dagdas-cauldron' | null
 export default function Home() {
   const { address, isConnected } = useAccount()
   const [currentGame, setCurrentGame] = useState<GameType>(null)
-  const [balance, setBalance] = useState(15) // Starting balance
+  const [balance, setBalance] = useState(50) // Starting balance
   const [dailyLimits, setDailyLimits] = useState({
     'emerald-flip': { remaining: 20, resetsIn: '24h 0m' },
     'dagdas-cauldron': { remaining: 20, resetsIn: '24h 0m' }
@@ -80,7 +80,7 @@ export default function Home() {
       const userId = `fid-${profile.fid}`
       const username = profile.username || `User-${profile.fid}`
 
-      // Get balance (should now be 25 after bonus)
+      // Get balance (should now be 75 after bonus)
       const userBalance = await balanceManager.getBalance(userId, username)
       setBalance(userBalance)
 
@@ -116,14 +116,14 @@ export default function Home() {
 
       console.log('Applying FARCaster incentives for:', { userId, username })
 
-      // Give FARCaster users bonus PIE (25 total: 15 starting + 10 bonus)
+      // Give FARCaster users bonus PIE (75 total: 50 starting + 25 bonus)
       const currentBalance = await balanceManager.getBalance(userId, username)
       console.log('Current balance:', currentBalance)
-      
-      if (currentBalance === 15) { // Only if it's the starting balance
-        await balanceManager.updateBalance(userId, username, 10) // +10 bonus PIE
-        setBalance(25) // Update local state to 25 PIE total
-        console.log('✅ Bonus applied: 25 PIE total')
+
+      if (currentBalance === 50) { // Only if it's the starting balance
+        await balanceManager.updateBalance(userId, username, 25) // +25 bonus PIE
+        setBalance(75) // Update local state to 75 PIE total
+        console.log('✅ Bonus applied: 75 PIE total')
       } else {
         // If user already has a balance, just set it
         setBalance(currentBalance)
@@ -162,7 +162,7 @@ export default function Home() {
             🏰 Welcome to Dagda Play
           </h2>
           <p className="mb-8" style={{ color: 'var(--foreground)' }}>
-            Connect your wallet to start playing! Or
+            Connect your wallet or Farcaster to start playing!
           </p>
 
           {/* FARCaster Auth Option */}
@@ -173,7 +173,7 @@ export default function Home() {
           <div className="text-sm space-y-2" style={{ color: 'var(--text-muted)' }}>
             <p>🎮 Play games • 🪙 Earn PIE Points • 🏆 Collect achievements</p>
             <p style={{ color: 'var(--accent-yellow)' }} className="font-semibold">
-              ✨ FARCaster users get +10 bonus PIE and 25 plays/day!
+              ✨ FARCaster users get +25 bonus PIE and 25 plays/day!
             </p>
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function Home() {
             🏰 Welcome to Dagda Play
           </h1>
           <p className="text-lg md:text-xl" style={{ color: 'var(--text-muted)' }}>
-            The Irish God of Games awaits your challenge!
+            Play Celtic-themed games and earn PIE tokens!
           </p>
         </div>
 
@@ -270,10 +270,12 @@ export default function Home() {
               boxShadow: '0 4px 6px var(--shadow)'
             }}
           >
-            <div className="text-6xl mb-4">🪙</div>
+            <div className="flex justify-center mb-4">
+              <img src="/games/emerald-flip/coin-heads.png" alt="Emerald Flip Coin" className="w-24 h-24 object-contain" />
+            </div>
             <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--card-text)' }}>Emerald Flip</h2>
             <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
-              Test your luck with Dagda's enchanted emerald coin! Bet 5-25 PIE with multipliers!
+              Flip the enchanted emerald coin! Choose heads or tails and win up to 25 PIE per flip!
             </p>
             <button
               onClick={() => setCurrentGame('emerald-flip')}
@@ -295,10 +297,12 @@ export default function Home() {
               boxShadow: '0 4px 6px var(--shadow)'
             }}
           >
-            <div className="text-6xl mb-4">🎲</div>
+            <div className="flex justify-center mb-4">
+              <img src="/games/dagdas-cauldron/symbols/cauldron.png" alt="Dagda's Cauldron" className="w-24 h-24 object-contain" />
+            </div>
             <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--card-text)' }}>Dagda's Cauldron</h2>
             <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
-              Stir the magical cauldron! Win up to 25 PIE with Celtic symbols and nudges!
+              Spin the Celtic slot machine! Match symbols to win up to 25 PIE per spin!
             </p>
             <button
               onClick={() => setCurrentGame('dagdas-cauldron')}
@@ -344,7 +348,7 @@ export default function Home() {
               <div className="text-3xl mb-3">💎</div>
               <h4 className="text-lg font-bold mb-2" style={{ color: 'var(--card-text)' }}>PIE Points</h4>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                Earn PIE & get exlusive rewards
+                Earn PIE & get exclusive rewards
               </p>
             </div>
 
