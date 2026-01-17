@@ -71,13 +71,17 @@ export class LimitManager {
     return `${hoursUntilReset}h ${minutesUntilReset}m`
   }
 
-  async checkLimit(userId: string, username: string, game: string): Promise<{ playsRemaining: number; resetsIn: string }> {
+  async checkLimit(userId: string, username: string, game: string, isFarcasterUser: boolean = false): Promise<{ playsRemaining: number; resetsIn: string }> {
     const userLimits = this.limits.get(userId) || []
     const userLimit = userLimits.find((l) => l.userId === userId)
 
+    const maxPlays = isFarcasterUser
+      ? this.FARCASTER_DAILY_LIMITS[game as keyof typeof this.FARCASTER_DAILY_LIMITS] || 25
+      : this.DAILY_LIMITS[game as keyof typeof this.DAILY_LIMITS] || 20
+
     if (!userLimit || !userLimit.games[game]) {
       return {
-        playsRemaining: this.DAILY_LIMITS[game as keyof typeof this.DAILY_LIMITS] || 3,
+        playsRemaining: maxPlays,
         resetsIn: this.getResetTimeString(),
       }
     }
@@ -85,19 +89,19 @@ export class LimitManager {
     const gameLimit = userLimit.games[game]
     if (this.isNewDay(gameLimit.lastReset)) {
       return {
-        playsRemaining: this.DAILY_LIMITS[game as keyof typeof this.DAILY_LIMITS] || 3,
+        playsRemaining: maxPlays,
         resetsIn: this.getResetTimeString(),
       }
     }
 
-    const playsRemaining = Math.max(0, (this.DAILY_LIMITS[game as keyof typeof this.DAILY_LIMITS] || 3) - gameLimit.count)
+    const playsRemaining = Math.max(0, maxPlays - gameLimit.count)
     return {
       playsRemaining,
       resetsIn: this.getResetTimeString(),
     }
   }
 
-  async checkAndUpdateLimit(userId: string, username: string, game: string): Promise<{ canPlay: boolean; remainingPlays: number; resetsIn: string }> {
+  async checkAndUpdateLimit(userId: string, username: string, game: string, isFarcasterUser: boolean = false): Promise<{ canPlay: boolean; remainingPlays: number; resetsIn: string }> {
     const userLimits = this.limits.get(userId) || []
     let userLimit = userLimits.find((l) => l.userId === userId)
 
@@ -125,7 +129,10 @@ export class LimitManager {
       gameLimit.lastReset = new Date().toISOString()
     }
 
-    const maxPlays = this.DAILY_LIMITS[game as keyof typeof this.DAILY_LIMITS] || 3
+    const maxPlays = isFarcasterUser
+      ? this.FARCASTER_DAILY_LIMITS[game as keyof typeof this.FARCASTER_DAILY_LIMITS] || 25
+      : this.DAILY_LIMITS[game as keyof typeof this.DAILY_LIMITS] || 20
+
     const canPlay = gameLimit.count < maxPlays
     const remainingPlays = Math.max(0, maxPlays - gameLimit.count)
 
@@ -143,7 +150,17 @@ export class LimitManager {
   }
 
   private readonly DAILY_LIMITS = {
-    coinflip: 3,
-    randomizer: 3,
+    coinflip: 20,
+    randomizer: 20,
+    'emerald-flip': 20,
+    'dagdas-cauldron': 20,
+  }
+
+  // Farcaster users get additional plays
+  private readonly FARCASTER_DAILY_LIMITS = {
+    coinflip: 25,
+    randomizer: 25,
+    'emerald-flip': 25,
+    'dagdas-cauldron': 25,
   }
 }

@@ -2,21 +2,21 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useAccount } from 'wagmi'
-import { CoinflipGame } from '@/components/games/CoinflipGame'
-import { RandomizerGame } from '@/components/games/RandomizerGame'
+import { EmeraldFlipGame } from '@/components/games/EmeraldFlipGame'
+import { DagdasCauldronGame } from '@/components/games/DagdasCauldronGame'
 import { BalanceManager } from '@/lib/BalanceManager'
 import { LimitManager } from '@/lib/LimitManager'
 import { FarcasterAuth } from '@/components/auth/FarcasterAuth'
 
-type GameType = 'coinflip' | 'randomizer' | null
+type GameType = 'emerald-flip' | 'dagdas-cauldron' | null
 
 export default function Home() {
   const { address, isConnected } = useAccount()
   const [currentGame, setCurrentGame] = useState<GameType>(null)
   const [balance, setBalance] = useState(15) // Starting balance
   const [dailyLimits, setDailyLimits] = useState({
-    coinflip: { remaining: 3, resetsIn: '24h 0m' },
-    randomizer: { remaining: 3, resetsIn: '24h 0m' }
+    'emerald-flip': { remaining: 20, resetsIn: '24h 0m' },
+    'dagdas-cauldron': { remaining: 20, resetsIn: '24h 0m' }
   })
   const [isFarcasterUser, setIsFarcasterUser] = useState(false)
   const [farcasterProfile, setFarcasterProfile] = useState<{ fid?: number; username?: string; displayName?: string } | null>(null)
@@ -43,12 +43,12 @@ export default function Home() {
       const userBalance = await balanceManager.getBalance(userId, username)
       setBalance(userBalance)
 
-      const coinflipLimit = await limitManager.checkLimit(userId, username, 'coinflip')
-      const randomizerLimit = await limitManager.checkLimit(userId, username, 'randomizer')
+      const emeraldFlipLimit = await limitManager.checkLimit(userId, username, 'emerald-flip')
+      const dagdasCauldronLimit = await limitManager.checkLimit(userId, username, 'dagdas-cauldron')
 
       setDailyLimits({
-        coinflip: { remaining: coinflipLimit.playsRemaining, resetsIn: coinflipLimit.resetsIn },
-        randomizer: { remaining: randomizerLimit.playsRemaining, resetsIn: randomizerLimit.resetsIn }
+        'emerald-flip': { remaining: emeraldFlipLimit.playsRemaining, resetsIn: emeraldFlipLimit.resetsIn },
+        'dagdas-cauldron': { remaining: dagdasCauldronLimit.playsRemaining, resetsIn: dagdasCauldronLimit.resetsIn }
       })
     } catch (error) {
       console.error('Error loading user data:', error)
@@ -84,10 +84,10 @@ export default function Home() {
       const userBalance = await balanceManager.getBalance(userId, username)
       setBalance(userBalance)
 
-      // For FARCaster users, always set 5 plays (don't load from database)
+      // For FARCaster users, always set 25 plays (don't load from database)
       setDailyLimits({
-        coinflip: { remaining: 5, resetsIn: '24h 0m' },
-        randomizer: { remaining: 5, resetsIn: '24h 0m' }
+        'emerald-flip': { remaining: 25, resetsIn: '24h 0m' },
+        'dagdas-cauldron': { remaining: 25, resetsIn: '24h 0m' }
       })
     } catch (error) {
       console.error('Error loading FARCaster user data:', error)
@@ -129,12 +129,12 @@ export default function Home() {
         setBalance(currentBalance)
       }
 
-      // Update limits for FARCaster users (5 plays instead of 3)
+      // Update limits for FARCaster users (25 plays instead of 20)
       setDailyLimits({
-        coinflip: { remaining: 5, resetsIn: '24h 0m' },
-        randomizer: { remaining: 5, resetsIn: '24h 0m' }
+        'emerald-flip': { remaining: 25, resetsIn: '24h 0m' },
+        'dagdas-cauldron': { remaining: 25, resetsIn: '24h 0m' }
       })
-      console.log('✅ FARCaster limits applied: 5 plays each')
+      console.log('✅ FARCaster limits applied: 25 plays each')
     } catch (error) {
       console.error('Error applying FARCaster incentives:', error)
     }
@@ -173,7 +173,7 @@ export default function Home() {
           <div className="text-sm space-y-2" style={{ color: 'var(--text-muted)' }}>
             <p>🎮 Play games • 🪙 Earn PIE Points • 🏆 Collect achievements</p>
             <p style={{ color: 'var(--accent-yellow)' }} className="font-semibold">
-              ✨ FARCaster users get +10 bonus PIE and 5 plays/day!
+              ✨ FARCaster users get +10 bonus PIE and 25 plays/day!
             </p>
           </div>
         </div>
@@ -181,12 +181,12 @@ export default function Home() {
     )
   }
 
-  if (currentGame === 'coinflip') {
-    return <CoinflipGame onComplete={handleGameComplete} balance={balance} farcasterProfile={farcasterProfile} />
+  if (currentGame === 'emerald-flip') {
+    return <EmeraldFlipGame onComplete={handleGameComplete} balance={balance} farcasterProfile={farcasterProfile} />
   }
 
-  if (currentGame === 'randomizer') {
-    return <RandomizerGame onComplete={handleGameComplete} balance={balance} farcasterProfile={farcasterProfile} />
+  if (currentGame === 'dagdas-cauldron') {
+    return <DagdasCauldronGame onComplete={handleGameComplete} balance={balance} farcasterProfile={farcasterProfile} />
   }
 
   return (
@@ -229,11 +229,11 @@ export default function Home() {
             }}
           >
             <div className="text-3xl font-bold mb-2" style={{ color: 'var(--card-text)' }}>
-              🪙 {dailyLimits.coinflip.remaining}
+              🪙 {dailyLimits['emerald-flip'].remaining}
             </div>
-            <div style={{ color: 'var(--text-muted)' }}>Coinflip Plays Left</div>
+            <div style={{ color: 'var(--text-muted)' }}>Emerald Flip Plays Left</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.8 }}>
-              Resets in: {dailyLimits.coinflip.resetsIn}
+              Resets in: {dailyLimits['emerald-flip'].resetsIn}
             </div>
           </div>
 
@@ -248,18 +248,18 @@ export default function Home() {
             }}
           >
             <div className="text-3xl font-bold mb-2" style={{ color: 'var(--card-text)' }}>
-              🎲 {dailyLimits.randomizer.remaining}
+              🎲 {dailyLimits['dagdas-cauldron'].remaining}
             </div>
-            <div style={{ color: 'var(--text-muted)' }}>Randomizer Plays Left</div>
+            <div style={{ color: 'var(--text-muted)' }}>Dagda's Cauldron Plays Left</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.8 }}>
-              Resets in: {dailyLimits.randomizer.resetsIn}
+              Resets in: {dailyLimits['dagdas-cauldron'].resetsIn}
             </div>
           </div>
         </div>
 
         {/* Game Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
-          {/* Coinflip Game */}
+          {/* Emerald Flip Game */}
           <div 
             className="rounded-xl p-8 text-center transition-colors"
             style={{ 
@@ -271,20 +271,20 @@ export default function Home() {
             }}
           >
             <div className="text-6xl mb-4">🪙</div>
-            <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--card-text)' }}>Coinflip</h2>
+            <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--card-text)' }}>Emerald Flip</h2>
             <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
-              Bet 5 PIE and guess heads or tails. Win 10 PIE if you're correct!
+              Test your luck with Dagda's enchanted emerald coin! Bet 5-25 PIE with multipliers!
             </p>
             <button
-              onClick={() => setCurrentGame('coinflip')}
-              disabled={dailyLimits.coinflip.remaining === 0}
+              onClick={() => setCurrentGame('emerald-flip')}
+              disabled={dailyLimits['emerald-flip'].remaining === 0}
               className="w-full py-4 px-8 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none"
             >
-              {dailyLimits.coinflip.remaining === 0 ? 'Daily Limit Reached' : 'Play Coinflip'}
+              {dailyLimits['emerald-flip'].remaining === 0 ? 'Daily Limit Reached' : 'Play Emerald Flip'}
             </button>
           </div>
 
-          {/* Randomizer Game */}
+          {/* Dagda's Cauldron Game */}
           <div 
             className="rounded-xl p-8 text-center transition-colors"
             style={{ 
@@ -296,16 +296,16 @@ export default function Home() {
             }}
           >
             <div className="text-6xl mb-4">🎲</div>
-            <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--card-text)' }}>Randomizer</h2>
+            <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--card-text)' }}>Dagda's Cauldron</h2>
             <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
-              Try your luck! Win up to 10 PIE or lose up to 10 PIE in this thrilling game of chance.
+              Stir the magical cauldron! Win up to 25 PIE with Celtic symbols and nudges!
             </p>
             <button
-              onClick={() => setCurrentGame('randomizer')}
-              disabled={dailyLimits.randomizer.remaining === 0}
+              onClick={() => setCurrentGame('dagdas-cauldron')}
+              disabled={dailyLimits['dagdas-cauldron'].remaining === 0}
               className="w-full py-4 px-8 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg transition-all transform hover:scale-105 disabled:transform-none"
             >
-              {dailyLimits.randomizer.remaining === 0 ? 'Daily Limit Reached' : 'Play Randomizer'}
+              {dailyLimits['dagdas-cauldron'].remaining === 0 ? 'Daily Limit Reached' : 'Play Dagda\'s Cauldron'}
             </button>
           </div>
         </div>
