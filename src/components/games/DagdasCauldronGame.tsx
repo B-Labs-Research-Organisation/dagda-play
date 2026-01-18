@@ -175,13 +175,10 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         setFloatingSymbols(prevSymbols => 
           prevSymbols.map(symbol => ({
             ...symbol,
-            // Spiral movement
-            x: symbol.x + Math.cos(stirCount * 0.1) * symbol.speed * 0.5,
-            y: symbol.y + Math.sin(stirCount * 0.1) * symbol.speed * 0.5,
-            rotation: symbol.rotation + symbol.speed * symbol.direction,
-            // Random drift
-            x: symbol.x + (Math.random() - 0.5) * 2,
-            y: symbol.y + (Math.random() - 0.5) * 2
+            // Spiral movement with random drift
+            x: symbol.x + Math.cos(stirCount * 0.1) * symbol.speed * 0.5 + (Math.random() - 0.5) * 2,
+            y: symbol.y + Math.sin(stirCount * 0.1) * symbol.speed * 0.5 + (Math.random() - 0.5) * 2,
+            rotation: symbol.rotation + symbol.speed * symbol.direction
           }))
         )
 
