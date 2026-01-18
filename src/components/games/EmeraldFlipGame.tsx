@@ -296,8 +296,8 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
         >
           <div className="text-center">
             <div
-              className={`w-32 h-32 mx-auto mb-4 rounded-full border-4 flex items-center justify-center text-6xl transition-all duration-1000 ${
-                isFlipping ? 'animate-spin' : ''
+              className={`w-32 h-32 mx-auto mb-4 rounded-full border-4 flex items-center justify-center text-6xl transition-all duration-2000 ${
+                isFlipping ? 'coin-flip-animation' : ''
               }`}
               style={{ 
                 borderColor: 'var(--accent-yellow)',
@@ -521,9 +521,30 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
 
       <style jsx>{`
         @keyframes flip {
-          0% { transform: rotateY(0deg); }
-          50% { transform: rotateY(1800deg); }
-          100% { transform: rotateY(3600deg); }
+          0% { 
+            transform: rotateY(0deg); 
+            opacity: 1;
+          }
+          25% { 
+            transform: rotateY(900deg); 
+            opacity: 0.5;
+          }
+          50% { 
+            transform: rotateY(1800deg); 
+            opacity: 0;
+          }
+          75% { 
+            transform: rotateY(2700deg); 
+            opacity: 0.5;
+          }
+          100% { 
+            transform: rotateY(3600deg); 
+            opacity: 1;
+          }
+        }
+        
+        .coin-flip-animation {
+          animation: flip 2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
         }
       `}</style>
     </div>
