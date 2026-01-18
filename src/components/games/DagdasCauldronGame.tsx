@@ -233,7 +233,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       balanceManager.updateBalance(userId, username, finalResult.amount - 5) // Subtract the 5 PIE bet
         .then((updatedBalance) => {
           setNewBalance(updatedBalance)
-          setGameState(finalResult.amount > 0 ? 'nudge' : 'result')
+          setGameState('nudge')
           setMessage(finalResult.message)
           
           // Start winning animation if there's a win
@@ -433,21 +433,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               className="inline-block relative"
               style={{ 
                 width: '400px',
-                height: '300px',
-                background: 'linear-gradient(to bottom, #4b5563, #1f2937)',
-                borderRadius: '50% 50% 0 0',
-                border: '8px solid #d4af37',
-                boxShadow: '0 0 50px rgba(212, 175, 55, 0.5)',
-                position: 'relative',
-                overflow: 'hidden'
+                height: '400px',
+                position: 'relative'
               }}
             >
-              {/* Cauldron Cabinet */}
+              {/* Actual Cauldron Image */}
               <img 
-                src="/games/dagdas-cauldron/cabinet.png" 
-                alt="Cauldron Cabinet"
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                style={{ opacity: 0.8 }}
+                src="/games/dagdas-cauldron/cauldron.png" 
+                alt="Dagda's Cauldron"
+                className="w-full h-full object-contain"
               />
               
               {/* Floating Symbols */}
