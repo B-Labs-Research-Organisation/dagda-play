@@ -230,13 +230,22 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <button
-            onClick={backToMain}
-            className="mb-4 flex items-center gap-2"
-            style={{ color: 'var(--accent-green)' }}
-          >
-            ← Back to Games
-          </button>
+          <div className="flex justify-between items-center mb-4">
+            <button
+              onClick={backToMain}
+              className="flex items-center gap-2"
+              style={{ color: 'var(--accent-green)' }}
+            >
+              ← Back to Games
+            </button>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="flex items-center gap-2"
+              style={{ color: 'var(--accent-green)' }}
+            >
+              🏰 Home
+            </button>
+          </div>
           <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
             <img src="/games/emerald-flip/coin-heads.png" alt="Emerald Coin" className="inline-block w-10 h-10 mr-2 align-middle" />
             Emerald Flip

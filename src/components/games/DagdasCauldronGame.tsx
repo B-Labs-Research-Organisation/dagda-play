@@ -335,13 +335,22 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       }}>
         {/* Header */}
         <div className="text-center mb-8">
-          <button
-            onClick={backToMain}
-            className="mb-4 flex items-center gap-2"
-            style={{ color: 'var(--accent-green)' }}
-          >
-            ← Back to Games
-          </button>
+          <div className="flex justify-between items-center mb-4">
+            <button
+              onClick={backToMain}
+              className="flex items-center gap-2"
+              style={{ color: 'var(--accent-green)' }}
+            >
+              ← Back to Games
+            </button>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="flex items-center gap-2"
+              style={{ color: 'var(--accent-green)' }}
+            >
+              🏰 Home
+            </button>
+          </div>
           <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
             🍲 Dagda's Cauldron
           </h1>

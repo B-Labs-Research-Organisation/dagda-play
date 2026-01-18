@@ -38,8 +38,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
       <header className="bg-black/20 backdrop-blur-sm border-b border-green-700/30 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img src="/games/dagda.png" alt="Dagda" className="w-8 h-8 object-contain" />
-            <h1 className="text-2xl font-bold text-green-100">Dagda Play</h1>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="flex items-center gap-2"
+            >
+              <img src="/games/dagda.png" alt="Dagda" className="w-8 h-8 object-contain" />
+              <h1 className="text-2xl font-bold text-green-100">Dagda Play</h1>
+            </button>
           </div>
 
           <div className="flex items-center gap-4">

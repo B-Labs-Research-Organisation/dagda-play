@@ -204,7 +204,7 @@ export default function Home() {
             </h1>
           </div>
           <p className="text-lg md:text-xl" style={{ color: 'var(--text-muted)' }}>
-            Play Celtic-themed games and earn PIE tokens!
+            Play Celtic-themed games and earn PIE Points!
           </p>
         </div>
 
@@ -234,11 +234,11 @@ export default function Home() {
               boxShadow: '0 4px 6px var(--shadow)'
             }}
           >
-            <div className="flex justify-center mb-2">
+            <div className="flex items-center justify-center gap-3 mb-2">
               <img src="/games/emerald-flip/coin-heads.png" alt="Emerald Flip" className="w-8 h-8 object-contain" />
-            </div>
-            <div className="text-2xl font-bold" style={{ color: 'var(--card-text)' }}>
-              {dailyLimits['emerald-flip'].remaining}
+              <div className="text-2xl font-bold" style={{ color: 'var(--card-text)' }}>
+                {dailyLimits['emerald-flip'].remaining}
+              </div>
             </div>
             <div style={{ color: 'var(--text-muted)' }}>Emerald Flip Plays Left</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.8 }}>
@@ -256,11 +256,11 @@ export default function Home() {
               boxShadow: '0 4px 6px var(--shadow)'
             }}
           >
-            <div className="flex justify-center mb-2">
+            <div className="flex items-center justify-center gap-3 mb-2">
               <img src="/games/dagdas-cauldron/symbols/cauldron.png" alt="Dagda's Cauldron" className="w-8 h-8 object-contain" />
-            </div>
-            <div className="text-2xl font-bold" style={{ color: 'var(--card-text)' }}>
-              {dailyLimits['dagdas-cauldron'].remaining}
+              <div className="text-2xl font-bold" style={{ color: 'var(--card-text)' }}>
+                {dailyLimits['dagdas-cauldron'].remaining}
+              </div>
             </div>
             <div style={{ color: 'var(--text-muted)' }}>Dagda's Cauldron Plays Left</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.8 }}>
