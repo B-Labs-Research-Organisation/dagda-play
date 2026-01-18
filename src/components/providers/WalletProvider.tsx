@@ -37,7 +37,10 @@ export function WalletProvider({ children }: WalletProviderProps) {
       {/* Wallet Connection Header */}
       <header className="bg-black/20 backdrop-blur-sm border-b border-green-700/30 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-green-100">🏰 Dagda Play</h1>
+          <div className="flex items-center gap-2">
+            <img src="/games/dagda.png" alt="Dagda" className="w-8 h-8 object-contain" />
+            <h1 className="text-2xl font-bold text-green-100">Dagda Play</h1>
+          </div>
 
           <div className="flex items-center gap-4">
             {farcasterUser ? (

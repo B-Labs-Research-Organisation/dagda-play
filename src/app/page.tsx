@@ -159,7 +159,7 @@ export default function Home() {
           }}
         >
           <div className="flex items-center justify-center gap-3 mb-6">
-            <img src="/games/dagda.png" alt="Dagda" className="w-12 h-12 object-contain" />
+            <img src="/games/dagda.png" alt="Dagda" className="w-32 h-32 object-contain" />
             <h2 className="text-3xl font-bold" style={{ color: 'var(--card-text)' }}>
               Welcome to Dagda Play
             </h2>
@@ -198,7 +198,7 @@ export default function Home() {
         {/* Welcome Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <img src="/games/dagda.png" alt="Dagda" className="w-16 h-16 object-contain" />
+            <img src="/games/dagda.png" alt="Dagda" className="w-40 h-40 object-contain" />
             <h1 className="text-4xl md:text-5xl font-bold" style={{ color: 'var(--foreground)' }}>
               Welcome to Dagda Play
             </h1>

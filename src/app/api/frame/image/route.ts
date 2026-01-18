@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
           justify-content: center;
           text-align: center;
         }
-        .logo { width: 80px; height: 80px; margin-bottom: 20px; object-fit: contain; }
+        .logo { width: 200px; height: 200px; margin-bottom: 20px; object-fit: contain; }
         .title { font-size: 48px; font-weight: bold; margin-bottom: 20px; }
         .subtitle { font-size: 24px; opacity: 0.9; }
         .brand { font-size: 20px; margin-top: 30px; opacity: 0.8; }

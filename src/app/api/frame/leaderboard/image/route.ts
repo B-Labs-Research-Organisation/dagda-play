@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         .subtitle { font-size: 32px; margin-bottom: 30px; }
         .description { font-size: 24px; opacity: 0.9; }
         .brand { font-size: 20px; margin-top: 20px; opacity: 0.8; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .brand-img { width: 24px; height: 24px; object-fit: contain; }
+        .brand-img { width: 64px; height: 64px; object-fit: contain; }
       </style>
     </head>
     <body>
