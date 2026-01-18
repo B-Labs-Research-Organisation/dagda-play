@@ -324,9 +324,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     <div className="min-h-screen p-8" style={{
       backgroundImage: `url('/games/dagdas-cauldron/cabinet.png')`,
       backgroundSize: 'cover',
-      backgroundAttachment: 'fixed'
+      backgroundAttachment: 'fixed',
+      filter: 'brightness(0.85)'
     }}>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto" style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        backdropFilter: 'blur(2px)',
+        borderRadius: '16px',
+        padding: '2rem'
+      }}>
         {/* Header */}
         <div className="text-center mb-8">
           <button
@@ -382,12 +388,19 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           <div className="text-center">
             {/* Slot Machine Frame */}
             <div 
-              className="inline-block p-4 rounded-lg border-4 shadow-lg"
+              className="inline-block p-6 rounded-xl border-4 shadow-2xl transform scale-110"
               style={{ 
-                background: 'linear-gradient(to bottom, var(--accent-yellow), #ca8a04)',
-                borderColor: 'var(--accent-yellow)'
+                background: 'linear-gradient(to bottom, var(--accent-yellow), #d4af37)',
+                borderColor: 'var(--accent-yellow)',
+                boxShadow: '0 0 50px rgba(212, 175, 55, 0.5)'
               }}
             >
+              {/* Celtic Slot Machine Title */}
+              <div className="text-center mb-4">
+                <div className="text-2xl font-bold" style={{ color: '#8b4513', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+                  🍲 DAGDA'S CAULDRON 🍲
+                </div>
+              </div>
               {/* Reels Display */}
               <div className="flex gap-2 justify-center mb-4">
                 {reels.map((reel, reelIndex) => (
@@ -398,23 +411,27 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                         const symbolIndex = (reel.position + offset + 5) % 5
                         const symbol = reel.symbols[symbolIndex]
                         return (
-                          <div
-                            key={`${reelIndex}-${offset}`}
-                            className={`w-16 h-16 rounded border-2 flex items-center justify-center text-2xl font-bold transition-transform duration-75 ${
-                              isSpinning ? 'animate-bounce' : ''
-                            }`}
-                            style={{
-                              backgroundColor: 'white',
-                              borderColor: '#d1d5db',
-                              opacity: offset === 0 ? 1 : 0.7
-                            }}
-                          >
-                            <img
-                              src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
-                              alt={symbol}
-                              className="w-12 h-12 object-contain"
-                            />
-                          </div>
+                            <div
+                              key={`${reelIndex}-${offset}`}
+                              className={`w-16 h-16 rounded-lg border-2 flex items-center justify-center text-2xl font-bold transition-transform duration-75 ${
+                                isSpinning ? 'animate-bounce' : ''
+                              }`}
+                              style={{
+                                backgroundColor: offset === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.6)',
+                                borderColor: offset === 0 ? '#d4af37' : '#d1d5db',
+                                boxShadow: offset === 0 ? '0 0 10px rgba(212, 175, 55, 0.5)' : 'none',
+                                opacity: offset === 0 ? 1 : 0.8
+                              }}
+                            >
+                              <img
+                                src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
+                                alt={symbol}
+                                className="w-12 h-12 object-contain"
+                                style={{
+                                  filter: offset === 0 ? 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.7))' : 'none'
+                                }}
+                              />
+                            </div>
                         )
                       })}
                     </div>
@@ -442,15 +459,26 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               </div>
 
               {/* Slot Machine Lever */}
-              <div className="flex justify-center mt-4">
-                <div className="w-2 h-16 rounded-full relative" style={{ backgroundColor: '#6b7280' }}>
+              <div className="flex justify-center mt-6">
+                <div className="relative">
+                  {/* Lever Base */}
+                  <div className="w-3 h-20 rounded-full" style={{
+                    background: 'linear-gradient(to bottom, #d4af37, #8b4513)',
+                    boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)'
+                  }}></div>
+                  {/* Lever Handle */}
                   <div
-                    className="w-4 h-4 rounded-full absolute -right-1 transition-all duration-300"
+                    className="w-6 h-6 rounded-full absolute -right-2 transition-all duration-300"
                     style={{
-                      backgroundColor: '#dc2626',
-                      top: isSpinning ? '-4px' : '8px'
+                      background: 'linear-gradient(to bottom, #dc2626, #991b1b)',
+                      boxShadow: '0 0 10px rgba(220, 38, 38, 0.7)',
+                      top: isSpinning ? '-8px' : '12px'
                     }}
                   ></div>
+                  {/* Lever Decoration */}
+                  <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                    <div className="w-4 h-4 bg-yellow-600 rounded-full border-2 border-yellow-800"></div>
+                  </div>
                 </div>
               </div>
             </div>

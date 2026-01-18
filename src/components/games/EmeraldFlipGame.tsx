@@ -226,9 +226,15 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
     <div className="min-h-screen p-8" style={{
       backgroundImage: `url('/games/emerald-flip/background.png')`,
       backgroundSize: 'cover',
-      backgroundAttachment: 'fixed'
+      backgroundAttachment: 'fixed',
+      filter: 'brightness(0.85)'
     }}>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto" style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(1px)',
+        borderRadius: '16px',
+        padding: '2rem'
+      }}>
         {/* Header */}
         <div className="text-center mb-8">
           <button

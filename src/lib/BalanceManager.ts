@@ -50,11 +50,11 @@ export class BalanceManager {
     const user = userBalances.find((b) => b.userId === userId)
 
     if (!user) {
-      const newUser: UserBalance = { userId, username, balance: 15 }
+      const newUser: UserBalance = { userId, username, balance: 50 }
       userBalances.push(newUser)
       this.balances.set(userId, userBalances)
       this.saveBalances()
-      return 15
+      return 50
     }
     return user.balance
   }
