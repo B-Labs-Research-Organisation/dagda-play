@@ -296,13 +296,14 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
         >
           <div className="text-center">
             <div
-              className={`w-32 h-32 mx-auto mb-4 rounded-full border-4 flex items-center justify-center text-6xl transition-transform duration-1000 ${
+              className={`w-32 h-32 mx-auto mb-4 rounded-full border-4 flex items-center justify-center text-6xl transition-all duration-1000 ${
                 isFlipping ? 'animate-spin' : ''
               }`}
               style={{ 
                 borderColor: 'var(--accent-yellow)',
                 backgroundColor: result === 'heads' ? '#fef08a' : '#fef3c7',
-                color: result === 'heads' ? '#854d0e' : '#92400e'
+                color: result === 'heads' ? '#854d0e' : '#92400e',
+                transform: isFlipping ? 'rotateY(1800deg)' : 'rotateY(0deg)'
               }}
               role="img"
               aria-label={result === 'heads' ? 'Coin showing heads' : 'Coin showing tails'}
@@ -312,7 +313,7 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
               ) : result === 'tails' ? (
                 <img src="/games/emerald-flip/coin-tails.png" alt="Tails" className="w-full h-full object-contain" />
               ) : (
-                '🪙'
+                <img src="/games/emerald-flip/coin-heads.png" alt="Heads" className="w-full h-full object-contain" />
               )}
             </div>
 
