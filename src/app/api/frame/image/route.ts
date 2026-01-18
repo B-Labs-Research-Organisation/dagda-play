@@ -23,14 +23,14 @@ export async function GET(request: NextRequest) {
           justify-content: center;
           text-align: center;
         }
-        .emoji { font-size: 80px; margin-bottom: 20px; }
+        .logo { width: 80px; height: 80px; margin-bottom: 20px; object-fit: contain; }
         .title { font-size: 48px; font-weight: bold; margin-bottom: 20px; }
         .subtitle { font-size: 24px; opacity: 0.9; }
         .brand { font-size: 20px; margin-top: 30px; opacity: 0.8; }
       </style>
     </head>
     <body>
-      <div class="emoji">🏰</div>
+      <img src="${baseUrl}/games/dagda.png" alt="Dagda" class="logo" />
       <div class="title">Dagda Gaming</div>
       <div class="subtitle">Irish God of Games</div>
       <div class="brand">Choose your game!</div>

@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
         .title { font-size: 48px; font-weight: bold; margin-bottom: 20px; }
         .subtitle { font-size: 32px; margin-bottom: 30px; }
         .description { font-size: 24px; opacity: 0.9; }
-        .brand { font-size: 20px; margin-top: 20px; opacity: 0.8; }
+        .brand { font-size: 20px; margin-top: 20px; opacity: 0.8; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .brand-img { width: 24px; height: 24px; object-fit: contain; }
       </style>
     </head>
     <body>
@@ -37,7 +38,10 @@ export async function GET(request: NextRequest) {
       <div class="title">Coinflip Challenge</div>
       <div class="subtitle">Bet 5 PIE • Win 10 PIE</div>
       <div class="description">Choose heads or tails!</div>
-      <div class="brand">🏰 Dagda Gaming</div>
+      <div class="brand">
+        <img src="${baseUrl}/games/dagda.png" alt="Dagda" class="brand-img" />
+        Dagda Gaming
+      </div>
     </body>
     </html>
   `

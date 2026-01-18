@@ -158,9 +158,12 @@ export default function Home() {
             boxShadow: '0 4px 6px var(--shadow)'
           }}
         >
-          <h2 className="text-3xl font-bold mb-6" style={{ color: 'var(--card-text)' }}>
-            🏰 Welcome to Dagda Play
-          </h2>
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <img src="/games/dagda.png" alt="Dagda" className="w-12 h-12 object-contain" />
+            <h2 className="text-3xl font-bold" style={{ color: 'var(--card-text)' }}>
+              Welcome to Dagda Play
+            </h2>
+          </div>
           <p className="mb-8" style={{ color: 'var(--foreground)' }}>
             Connect your wallet or Farcaster to start playing!
           </p>
@@ -194,9 +197,12 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         {/* Welcome Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>
-            🏰 Welcome to Dagda Play
-          </h1>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <img src="/games/dagda.png" alt="Dagda" className="w-16 h-16 object-contain" />
+            <h1 className="text-4xl md:text-5xl font-bold" style={{ color: 'var(--foreground)' }}>
+              Welcome to Dagda Play
+            </h1>
+          </div>
           <p className="text-lg md:text-xl" style={{ color: 'var(--text-muted)' }}>
             Play Celtic-themed games and earn PIE tokens!
           </p>
