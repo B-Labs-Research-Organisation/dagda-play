@@ -544,11 +544,11 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         {gameState === 'ready' && (
           <div className="text-center">
             <button
-              onClick={startStirring}
+              onClick={() => startStirring()}
               className="px-8 py-4 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
               style={{ background: 'linear-gradient(to right, var(--accent-purple), #7c3aed)' }}
             >
-              🍲 STIR (Bet 5 PIE)
+              🥄 STIR (Bet 5 PIE)
             </button>
           </div>
         )}
