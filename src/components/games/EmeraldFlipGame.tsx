@@ -224,17 +224,10 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
 
   return (
     <div className="min-h-screen p-8" style={{
-      backgroundImage: `url('/games/emerald-flip/background.png')`,
-      backgroundSize: 'cover',
-      backgroundAttachment: 'fixed',
-      filter: 'brightness(0.85)'
+      backgroundColor: 'var(--background)',
+      backgroundImage: 'none'
     }}>
-      <div className="max-w-2xl mx-auto" style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(1px)',
-        borderRadius: '16px',
-        padding: '2rem'
-      }}>
+      <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <button
@@ -245,7 +238,8 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
             ← Back to Games
           </button>
           <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
-            🪙 Emerald Flip
+            <img src="/games/emerald-flip/coin-heads.png" alt="Emerald Coin" className="inline-block w-10 h-10 mr-2 align-middle" />
+            Emerald Flip
           </h1>
           <p style={{ color: 'var(--text-muted)' }}>
             Test your luck with Dagda's enchanted emerald coin!
@@ -367,7 +361,9 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
                 color: selectedChoice === 'heads' ? '#854d0e' : 'var(--card-text)'
               }}
             >
-              <div className="text-4xl mb-2">🪙</div>
+              <div className="flex justify-center mb-2">
+                <img src="/games/emerald-flip/coin-heads.png" alt="Heads" className="w-12 h-12 object-contain" />
+              </div>
               <div className="font-bold">HEADS</div>
               <div className="text-sm opacity-75">+{5 * betMultiplier} PIE if correct</div>
             </button>
@@ -385,7 +381,9 @@ export function EmeraldFlipGame({ onComplete, balance, farcasterProfile }: Emera
                 color: selectedChoice === 'tails' ? '#854d0e' : 'var(--card-text)'
               }}
             >
-              <div className="text-4xl mb-2">⭐</div>
+              <div className="flex justify-center mb-2">
+                <img src="/games/emerald-flip/coin-tails.png" alt="Tails" className="w-12 h-12 object-contain" />
+              </div>
               <div className="font-bold">TAILS</div>
               <div className="text-sm opacity-75">+{5 * betMultiplier} PIE if correct</div>
             </button>
