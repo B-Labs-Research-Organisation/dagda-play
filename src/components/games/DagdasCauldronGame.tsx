@@ -11,48 +11,36 @@ interface DagdasCauldronGameProps {
   farcasterProfile?: { fid?: number; username?: string } | null
 }
 
-type GameState = 'ready' | 'spinning' | 'result' | 'nudge'
+type GameState = 'ready' | 'stirring' | 'result' | 'nudge'
 type Symbol = 'harp' | 'club' | 'cauldron' | 'wolfhound' | 'shamrock'
 
-interface Reel {
-  symbols: Symbol[]
-  position: number
-}
-
-interface Payline {
-  positions: number[]
-  multiplier: number
+interface FloatingSymbol {
+  id: number
+  symbol: Symbol
+  x: number
+  y: number
+  rotation: number
+  speed: number
+  direction: number
+  size: number
 }
 
 export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: DagdasCauldronGameProps) {
   const { address } = useAccount()
   const [gameState, setGameState] = useState<GameState>('ready')
-  const [isSpinning, setIsSpinning] = useState(false)
-  const [reels, setReels] = useState<Reel[]>([
-    { symbols: ['harp', 'club', 'cauldron', 'wolfhound', 'shamrock'], position: 0 },
-    { symbols: ['club', 'shamrock', 'harp', 'cauldron', 'wolfhound'], position: 0 },
-    { symbols: ['cauldron', 'wolfhound', 'shamrock', 'harp', 'club'], position: 0 }
-  ])
-  const [displayedSymbols, setDisplayedSymbols] = useState<Symbol[]>(['harp', 'club', 'cauldron'])
+  const [isStirring, setIsStirring] = useState(false)
+  const [floatingSymbols, setFloatingSymbols] = useState<FloatingSymbol[]>([])
+  const [resultSymbols, setResultSymbols] = useState<Symbol[]>([])
   const [result, setResult] = useState<{ message: string; amount: number; emoji: string; color: string } | null>(null)
   const [newBalance, setNewBalance] = useState(balance)
   const [message, setMessage] = useState('')
   const [nudgesRemaining, setNudgesRemaining] = useState(1)
   const [nudgeCost, setNudgeCost] = useState(1)
-  const [selectedReelForNudge, setSelectedReelForNudge] = useState<number | null>(null)
-  const [winningPaylines, setWinningPaylines] = useState<number[]>([])
+  const [winningAnimation, setWinningAnimation] = useState(false)
+  const [animationFrame, setAnimationFrame] = useState(0)
 
   const balanceManager = new BalanceManager()
   const limitManager = new LimitManager()
-
-  // Paylines: [reel1, reel2, reel3] positions (0=top, 1=middle, 2=bottom)
-  const paylines: Payline[] = [
-    { positions: [1, 1, 1], multiplier: 1 }, // Middle horizontal
-    { positions: [0, 0, 0], multiplier: 1 }, // Top horizontal
-    { positions: [2, 2, 2], multiplier: 1 }, // Bottom horizontal
-    { positions: [0, 1, 2], multiplier: 1.5 }, // Diagonal top-left to bottom-right
-    { positions: [2, 1, 0], multiplier: 1.5 }, // Diagonal bottom-left to top-right
-  ]
 
   // Symbol values for payout calculations
   const symbolValues: Record<Symbol, number> = {
@@ -63,75 +51,76 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     shamrock: 1
   }
 
-  const spinReels = () => {
-    // Create new reel positions with spinning animation
-    const newReels = reels.map(reel => {
-      // Randomize the final position
-      const finalPosition = Math.floor(Math.random() * 5)
-      return {
-        ...reel,
-        position: finalPosition
-      }
-    })
+  // Initialize floating symbols
+  const initializeSymbols = () => {
+    const symbols: FloatingSymbol[] = []
+    const cauldronWidth = 400
+    const cauldronHeight = 300
+    const centerX = cauldronWidth / 2
+    const centerY = cauldronHeight / 2
+    const symbolsList: Symbol[] = ['harp', 'club', 'cauldron', 'wolfhound', 'shamrock']
 
-    setReels(newReels)
-
-    // Update displayed symbols based on middle positions
-    const newSymbols = newReels.map(reel => reel.symbols[reel.position])
-    setDisplayedSymbols(newSymbols)
+    for (let i = 0; i < 15; i++) {
+      const angle = (Math.PI * 2 * i) / 15
+      const radius = 80 + Math.random() * 40
+      const symbol = symbolsList[Math.floor(Math.random() * symbolsList.length)]
+      
+      symbols.push({
+        id: i,
+        symbol: symbol,
+        x: centerX + Math.cos(angle) * radius,
+        y: centerY + Math.sin(angle) * radius,
+        rotation: Math.random() * 360,
+        speed: 2 + Math.random() * 3,
+        direction: Math.random() > 0.5 ? 1 : -1,
+        size: 40 + Math.random() * 20
+      })
+    }
+    return symbols
   }
 
   const calculatePayout = (symbols: Symbol[]): { message: string; amount: number; emoji: string; color: string } => {
-    // Check each payline for matches
-    const winningLines: number[] = []
+    // Check for matches in the result symbols
+    const firstSymbol = symbols[0]
+    const allMatch = symbols.every(symbol => symbol === firstSymbol)
+    const twoMatch = symbols[0] === symbols[1] || symbols[1] === symbols[2] || symbols[0] === symbols[2]
+
     let totalPayout = 0
+    let message = ''
+    let emoji = ''
+    let color = ''
 
-    paylines.forEach((payline, index) => {
-      const lineSymbols = payline.positions.map((pos, reelIndex) => reels[reelIndex].symbols[pos])
-      const firstSymbol = lineSymbols[0]
-
-      // Check if all symbols in the payline match
-      if (lineSymbols.every(symbol => symbol === firstSymbol)) {
-        winningLines.push(index)
-        const symbolValue = symbolValues[firstSymbol]
-        totalPayout += symbolValue * payline.multiplier
-      }
-    })
-
-    // Special case: All three middle symbols match (jackpot)
-    const middleSymbols = reels.map(reel => reel.symbols[reel.position])
-    if (middleSymbols.every(symbol => symbol === middleSymbols[0])) {
-      const symbolValue = symbolValues[middleSymbols[0]]
-      totalPayout += symbolValue * 2 // Jackpot multiplier
+    if (allMatch) {
+      // All three match - jackpot
+      totalPayout = symbolValues[firstSymbol] * 5
+      message = '🎉 JACKPOT! Dagda smiles upon you!'
+      emoji = '💎'
+      color = 'from-yellow-400 to-yellow-600'
+    } else if (twoMatch) {
+      // Two match
+      const matchingSymbol = symbols.find((symbol, index) => 
+        index < 2 && symbols[index + 1] === symbol
+      ) || symbols[0]
+      totalPayout = symbolValues[matchingSymbol] * 2
+      message = '🎉 Great win! The cauldron overflows!'
+      emoji = '🪙'
+      color = 'from-green-400 to-green-600'
+    } else {
+      // No match
+      message = '😢 No win this time. Try again!'
+      emoji = '💸'
+      color = 'from-orange-400 to-red-500'
     }
 
-    // Determine result message and styling
-    if (totalPayout > 0) {
-      const messages = [
-        { threshold: 20, message: '🎉 JACKPOT! Dagda smiles upon you!', emoji: '💎', color: 'from-yellow-400 to-yellow-600' },
-        { threshold: 10, message: '🎉 Great win! The cauldron overflows!', emoji: '🪙', color: 'from-green-400 to-green-600' },
-        { threshold: 5, message: '🎉 Nice win! Luck of the Irish!', emoji: '⚘', color: 'from-green-400 to-green-600' },
-        { threshold: 1, message: '🎉 Small win! Keep playing!', emoji: '🍀', color: 'from-blue-400 to-blue-600' },
-      ]
-
-      const result = messages.find(m => totalPayout >= m.threshold) || messages[messages.length - 1]
-      return {
-        message: result.message,
-        amount: totalPayout,
-        emoji: result.emoji,
-        color: result.color
-      }
-    } else {
-      return {
-        message: '😢 No win this time. Try again!',
-        amount: 0,
-        emoji: '💸',
-        color: 'from-orange-400 to-red-500'
-      }
+    return {
+      message,
+      amount: totalPayout,
+      emoji,
+      color
     }
   }
 
-  const playGame = async () => {
+  const startStirring = async () => {
     if (gameState !== 'ready') return
 
     try {
@@ -163,60 +152,121 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         return
       }
 
-      setGameState('spinning')
-      setIsSpinning(true)
+      setGameState('stirring')
+      setIsStirring(true)
       setMessage('Stirring Dagda\'s magical cauldron...')
-      setWinningPaylines([])
+      setWinningAnimation(false)
+      setAnimationFrame(0)
       setNudgesRemaining(1)
       setNudgeCost(1)
+      setResult(null)
 
-      // Animate the slots
-      const spinDuration = 2000
-      const spinInterval = 100
-      let spinCount = 0
-      const maxSpins = spinDuration / spinInterval
+      // Initialize symbols
+      const initialSymbols = initializeSymbols()
+      setFloatingSymbols(initialSymbols)
 
-      const spinTimer = setInterval(() => {
-        // Randomize reel positions during spin
-        setReels(prevReels => prevReels.map(reel => ({
-          ...reel,
-          position: Math.floor(Math.random() * 5)
-        })))
+      // Animate the cauldron
+      const stirDuration = 3000
+      const stirInterval = 50
+      let stirCount = 0
+      const maxStirs = stirDuration / stirInterval
 
-        spinCount++
+      const stirTimer = setInterval(() => {
+        setFloatingSymbols(prevSymbols => 
+          prevSymbols.map(symbol => ({
+            ...symbol,
+            // Spiral movement
+            x: symbol.x + Math.cos(stirCount * 0.1) * symbol.speed * 0.5,
+            y: symbol.y + Math.sin(stirCount * 0.1) * symbol.speed * 0.5,
+            rotation: symbol.rotation + symbol.speed * symbol.direction,
+            // Random drift
+            x: symbol.x + (Math.random() - 0.5) * 2,
+            y: symbol.y + (Math.random() - 0.5) * 2
+          }))
+        )
 
-        if (spinCount >= maxSpins) {
-          clearInterval(spinTimer)
-          setIsSpinning(false)
+        stirCount++
 
-          // Final reel positions
-          spinReels()
-
-          // Calculate payout
-          const finalResult = calculatePayout(displayedSymbols)
-          setResult(finalResult)
-
-          // Update balance
-          balanceManager.updateBalance(userId, username, finalResult.amount - 5) // Subtract the 5 PIE bet
-            .then((updatedBalance) => {
-              setNewBalance(updatedBalance)
-              setGameState(finalResult.amount > 0 ? 'nudge' : 'result')
-              setMessage(finalResult.message)
-            })
-            .catch((error) => {
-              console.error('Error updating balance:', error)
-              setMessage('Error updating balance. Please try again.')
-            })
+        if (stirCount >= maxStirs) {
+          clearInterval(stirTimer)
+          finishStirring()
         }
-      }, spinInterval)
+      }, stirInterval)
 
     } catch (error) {
-      console.error('Error playing Dagda\'s Cauldron:', error)
+      console.error('Error starting cauldron stirring:', error)
       setMessage('An error occurred. Please try again.')
     }
   }
 
-  const handleNudge = async (reelIndex: number, direction: 'up' | 'down') => {
+  const finishStirring = async () => {
+    setIsStirring(false)
+    
+    // Generate final result symbols
+    const symbolsList: Symbol[] = ['harp', 'club', 'cauldron', 'wolfhound', 'shamrock']
+    const finalSymbols: Symbol[] = []
+    
+    for (let i = 0; i < 3; i++) {
+      finalSymbols.push(symbolsList[Math.floor(Math.random() * symbolsList.length)])
+    }
+    
+    setResultSymbols(finalSymbols)
+
+    // Calculate payout
+    const finalResult = calculatePayout(finalSymbols)
+    setResult(finalResult)
+
+    // Update balance
+    try {
+      // Get user ID from wallet OR Farcaster
+      let userId: string
+      let username: string
+
+      if (address) {
+        userId = address.toLowerCase()
+        username = `Player_${address.slice(0, 6)}`
+      } else if (farcasterProfile?.fid) {
+        userId = `fid-${farcasterProfile.fid}`
+        username = farcasterProfile.username || `User-${farcasterProfile.fid}`
+      } else {
+        setMessage('Please connect your wallet or sign in with Farcaster first.')
+        return
+      }
+
+      balanceManager.updateBalance(userId, username, finalResult.amount - 5) // Subtract the 5 PIE bet
+        .then((updatedBalance) => {
+          setNewBalance(updatedBalance)
+          setGameState(finalResult.amount > 0 ? 'nudge' : 'result')
+          setMessage(finalResult.message)
+          
+          // Start winning animation if there's a win
+          if (finalResult.amount > 0) {
+            setWinningAnimation(true)
+            startWinningAnimation()
+          }
+        })
+        .catch((error) => {
+          console.error('Error updating balance:', error)
+          setMessage('Error updating balance. Please try again.')
+        })
+    } catch (error) {
+      console.error('Error with balance update:', error)
+      setMessage('An error occurred. Please try again.')
+    }
+  }
+
+  const startWinningAnimation = () => {
+    const animationTimer = setInterval(() => {
+      setAnimationFrame(prev => (prev + 1) % 12)
+    }, 100)
+
+    setTimeout(() => {
+      clearInterval(animationTimer)
+      setWinningAnimation(false)
+    }, 3000)
+  }
+
+  const handleNudge = async (direction: 'left' | 'right') => {
     if (gameState !== 'nudge' || nudgesRemaining <= 0) return
 
     try {
@@ -241,28 +291,19 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         return
       }
 
-      setGameState('spinning')
-      setMessage(`Nudging reel ${reelIndex + 1} ${direction}...`)
+      setGameState('stirring')
+      setMessage(`Nudging the cauldron ${direction}...`)
 
-      // Apply the nudge
+      // Apply the nudge - change one of the symbols
       setTimeout(() => {
-        setReels(prevReels => {
-          const newReels = [...prevReels]
-          const currentPosition = newReels[reelIndex].position
-
-          // Move up or down, wrapping around if needed
-          if (direction === 'up') {
-            newReels[reelIndex].position = currentPosition > 0 ? currentPosition - 1 : 4
-          } else {
-            newReels[reelIndex].position = currentPosition < 4 ? currentPosition + 1 : 0
-          }
-
-          return newReels
-        })
-
-        // Update displayed symbols
-        const newSymbols = reels.map(reel => reel.symbols[reel.position])
-        setDisplayedSymbols(newSymbols)
+        const symbolsList: Symbol[] = ['harp', 'club', 'cauldron', 'wolfhound', 'shamrock']
+        const newSymbols = [...resultSymbols]
+        
+        // Change a random symbol to try to create a match
+        const changeIndex = Math.floor(Math.random() * 3)
+        newSymbols[changeIndex] = symbolsList[Math.floor(Math.random() * symbolsList.length)]
+        
+        setResultSymbols(newSymbols)
 
         // Calculate new payout
         const newResult = calculatePayout(newSymbols)
@@ -276,6 +317,12 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             setNudgeCost(nudgeCost + 1) // Increase cost for next nudge
             setGameState('result')
             setMessage(`Nudge applied! ${newResult.message}`)
+            
+            // Start winning animation if there's a win
+            if (newResult.amount > 0) {
+              setWinningAnimation(true)
+              startWinningAnimation()
+            }
           })
           .catch((error) => {
             console.error('Error applying nudge:', error)
@@ -291,19 +338,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
 
   const resetGame = () => {
     setGameState('ready')
-    setIsSpinning(false)
-    setReels([
-      { symbols: ['harp', 'club', 'cauldron', 'wolfhound', 'shamrock'], position: 0 },
-      { symbols: ['club', 'shamrock', 'harp', 'cauldron', 'wolfhound'], position: 0 },
-      { symbols: ['cauldron', 'wolfhound', 'shamrock', 'harp', 'club'], position: 0 }
-    ])
-    setDisplayedSymbols(['harp', 'club', 'cauldron'])
+    setIsStirring(false)
+    setFloatingSymbols([])
+    setResultSymbols([])
     setResult(null)
     setMessage('')
     setNudgesRemaining(1)
     setNudgeCost(1)
-    setSelectedReelForNudge(null)
-    setWinningPaylines([])
+    setWinningAnimation(false)
+    setAnimationFrame(0)
   }
 
   const backToMain = () => {
@@ -322,17 +365,10 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
 
   return (
     <div className="min-h-screen p-8" style={{
-      backgroundImage: `url('/games/dagdas-cauldron/cabinet.png')`,
-      backgroundSize: 'cover',
-      backgroundAttachment: 'fixed',
-      filter: 'brightness(0.85)'
+      backgroundColor: 'var(--background)',
+      backgroundImage: 'none'
     }}>
-      <div className="max-w-2xl mx-auto" style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        backdropFilter: 'blur(2px)',
-        borderRadius: '16px',
-        padding: '2rem'
-      }}>
+      <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-between items-center mb-4">
@@ -375,15 +411,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               Current Balance: {newBalance} PIE
             </div>
             <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-              {gameState === 'ready' && 'Click spin to test your luck!'}
-              {gameState === 'spinning' && 'Stirring the magical cauldron...'}
+              {gameState === 'ready' && 'Click stir to test your luck!'}
+              {gameState === 'stirring' && 'Stirring the magical cauldron...'}
               {gameState === 'result' && `New Balance: ${newBalance} PIE`}
               {gameState === 'nudge' && `Nudges remaining: ${nudgesRemaining} (Cost: ${nudgeCost} PIE)`}
             </div>
           </div>
         </div>
 
-        {/* Slot Machine Display */}
+        {/* Cauldron Display */}
         <div 
           className="rounded-xl p-8 mb-8"
           style={{ 
@@ -395,101 +431,107 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           }}
         >
           <div className="text-center">
-            {/* Slot Machine Frame */}
+            {/* Cauldron Frame */}
             <div 
-              className="inline-block p-6 rounded-xl border-4 shadow-2xl transform scale-110"
+              className="inline-block relative"
               style={{ 
-                background: 'linear-gradient(to bottom, var(--accent-yellow), #d4af37)',
-                borderColor: 'var(--accent-yellow)',
-                boxShadow: '0 0 50px rgba(212, 175, 55, 0.5)'
+                width: '400px',
+                height: '300px',
+                background: 'linear-gradient(to bottom, #4b5563, #1f2937)',
+                borderRadius: '50% 50% 0 0',
+                border: '8px solid #d4af37',
+                boxShadow: '0 0 50px rgba(212, 175, 55, 0.5)',
+                position: 'relative',
+                overflow: 'hidden'
               }}
             >
-              {/* Celtic Slot Machine Title */}
-              <div className="text-center mb-4">
-                <div className="text-2xl font-bold" style={{ color: '#8b4513', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
-                  🍲 DAGDA'S CAULDRON 🍲
-                </div>
-              </div>
-              {/* Reels Display */}
-              <div className="flex gap-2 justify-center mb-4">
-                {reels.map((reel, reelIndex) => (
-                  <div key={reelIndex} className="relative">
-                    {/* Show all 3 visible symbols for each reel */}
-                    <div className="flex flex-col gap-1">
-                      {[-1, 0, 1].map((offset) => {
-                        const symbolIndex = (reel.position + offset + 5) % 5
-                        const symbol = reel.symbols[symbolIndex]
-                        return (
-                            <div
-                              key={`${reelIndex}-${offset}`}
-                              className={`w-16 h-16 rounded-lg border-2 flex items-center justify-center text-2xl font-bold transition-transform duration-75 ${
-                                isSpinning ? 'animate-bounce' : ''
-                              }`}
-                              style={{
-                                backgroundColor: offset === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.6)',
-                                borderColor: offset === 0 ? '#d4af37' : '#d1d5db',
-                                boxShadow: offset === 0 ? '0 0 10px rgba(212, 175, 55, 0.5)' : 'none',
-                                opacity: offset === 0 ? 1 : 0.8
-                              }}
-                            >
-                              <img
-                                src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
-                                alt={symbol}
-                                className="w-12 h-12 object-contain"
-                                style={{
-                                  filter: offset === 0 ? 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.7))' : 'none'
-                                }}
-                              />
-                            </div>
-                        )
-                      })}
-                    </div>
-                    {/* Nudge buttons for this reel */}
-                    {gameState === 'nudge' && (
-                      <div className="flex justify-center gap-1 mt-1">
-                        <button
-                          onClick={() => handleNudge(reelIndex, 'up')}
-                          disabled={nudgesRemaining <= 0}
-                          className="w-6 h-6 bg-blue-500 text-white rounded text-xs disabled:bg-gray-400"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          onClick={() => handleNudge(reelIndex, 'down')}
-                          disabled={nudgesRemaining <= 0}
-                          className="w-6 h-6 bg-blue-500 text-white rounded text-xs disabled:bg-gray-400"
-                        >
-                          ↓
-                        </button>
-                      </div>
-                    )}
+              {/* Cauldron Cabinet */}
+              <img 
+                src="/games/dagdas-cauldron/cabinet.png" 
+                alt="Cauldron Cabinet"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                style={{ opacity: 0.8 }}
+              />
+              
+              {/* Floating Symbols */}
+              <div className="relative w-full h-full">
+                {floatingSymbols.map((symbol) => (
+                  <div
+                    key={symbol.id}
+                    className="absolute transition-all duration-50"
+                    style={{
+                      left: `${symbol.x - symbol.size/2}px`,
+                      top: `${symbol.y - symbol.size/2}px`,
+                      width: `${symbol.size}px`,
+                      height: `${symbol.size}px`,
+                      transform: `rotate(${symbol.rotation}deg)`,
+                      opacity: isStirring ? 1 : 0
+                    }}
+                  >
+                    <img
+                      src={`/games/dagdas-cauldron/symbols/${symbol.symbol}.png`}
+                      alt={symbol.symbol}
+                      className="w-full h-full object-contain"
+                      style={{
+                        filter: isStirring ? 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.7))' : 'none'
+                      }}
+                    />
                   </div>
                 ))}
               </div>
 
-              {/* Slot Machine Lever */}
-              <div className="flex justify-center mt-6">
-                <div className="relative">
-                  {/* Lever Base */}
-                  <div className="w-3 h-20 rounded-full" style={{
-                    background: 'linear-gradient(to bottom, #d4af37, #8b4513)',
-                    boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)'
-                  }}></div>
-                  {/* Lever Handle */}
+              {/* Result Symbols */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+                {resultSymbols.map((symbol, index) => (
                   <div
-                    className="w-6 h-6 rounded-full absolute -right-2 transition-all duration-300"
+                    key={index}
+                    className={`w-20 h-20 rounded-lg border-4 flex items-center justify-center transition-all duration-500 ${
+                      isStirring ? 'opacity-0 scale-50' : 'opacity-100 scale-100'
+                    }`}
                     style={{
-                      background: 'linear-gradient(to bottom, #dc2626, #991b1b)',
-                      boxShadow: '0 0 10px rgba(220, 38, 38, 0.7)',
-                      top: isSpinning ? '-8px' : '12px'
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      borderColor: '#d4af37',
+                      boxShadow: '0 0 10px rgba(212, 175, 55, 0.5)'
                     }}
-                  ></div>
-                  {/* Lever Decoration */}
-                  <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                    <div className="w-4 h-4 bg-yellow-600 rounded-full border-2 border-yellow-800"></div>
+                  >
+                    <img
+                      src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
+                      alt={symbol}
+                      className="w-16 h-16 object-contain"
+                      style={{
+                        filter: 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.7))'
+                      }}
+                    />
                   </div>
-                </div>
+                ))}
               </div>
+
+              {/* Winning Animation Overlay */}
+              {winningAnimation && (
+                <div className="absolute inset-0 pointer-events-none">
+                  <img
+                    src={`/games/dagdas-cauldron/win-animation-${String(animationFrame + 1).padStart(2, '0')}.png`}
+                    alt="Win Animation"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Cauldron Handle */}
+              <div 
+                className="absolute top-2 left-2 w-8 h-16 rounded-full"
+                style={{
+                  background: 'linear-gradient(to bottom, #d4af37, #8b4513)',
+                  boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)'
+                }}
+              ></div>
+              <div 
+                className="absolute top-2 right-2 w-8 h-16 rounded-full"
+                style={{
+                  background: 'linear-gradient(to bottom, #d4af37, #8b4513)',
+                  boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)'
+                }}
+              ></div>
             </div>
 
             {/* Result Display */}
@@ -507,15 +549,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           </div>
         </div>
 
-        {/* Spin Button */}
+        {/* Stir Button */}
         {gameState === 'ready' && (
           <div className="text-center">
             <button
-              onClick={playGame}
+              onClick={startStirring}
               className="px-8 py-4 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
               style={{ background: 'linear-gradient(to right, var(--accent-purple), #7c3aed)' }}
             >
-              🎰 SPIN (Bet 5 PIE)
+              🍲 STIR (Bet 5 PIE)
             </button>
           </div>
         )}
@@ -526,9 +568,25 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             <p className="mb-2" style={{ color: 'var(--text-muted)' }}>
               You have {nudgesRemaining} nudge{nudgesRemaining !== 1 ? 's' : ''} remaining (Cost: {nudgeCost} PIE each)
             </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => handleNudge('left')}
+                disabled={nudgesRemaining <= 0}
+                className="px-6 py-3 text-white font-bold rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
+              >
+                🔄 Nudge Left
+              </button>
+              <button
+                onClick={() => handleNudge('right')}
+                disabled={nudgesRemaining <= 0}
+                className="px-6 py-3 text-white font-bold rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
+              >
+                🔄 Nudge Right
+              </button>
+            </div>
             <button
               onClick={() => setGameState('result')}
-              className="px-6 py-2 text-white font-bold rounded-lg transition-colors"
+              className="mt-4 px-6 py-2 text-white font-bold rounded-lg transition-colors"
               style={{ backgroundColor: 'var(--accent-green)' }}
             >
               Finish & Collect
@@ -593,14 +651,26 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         >
           <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--card-text)' }}>🎮 How to Play</h3>
           <ul className="space-y-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-            <li>• Bet 5 PIE to spin the cauldron</li>
-            <li>• Match symbols on paylines to win</li>
+            <li>• Bet 5 PIE to stir the cauldron</li>
+            <li>• Watch symbols swirl and settle</li>
+            <li>• Match 2 or 3 symbols to win</li>
             <li>• Use nudges to improve your result</li>
             <li>• Win up to 25 PIE with the jackpot</li>
             <li>• 20 plays per day (25 for Farcaster users)</li>
           </ul>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes stirAnimation {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .cauldron-stir-animation {
+          animation: stirAnimation 2s linear infinite;
+        }
+      `}</style>
     </div>
   )
 }
