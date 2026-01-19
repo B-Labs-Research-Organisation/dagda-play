@@ -494,8 +494,8 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                 className="w-full h-full object-contain"
               />
               
-              {/* Floating Symbols */}
-              <div className="relative w-full h-full">
+              {/* Floating Symbols - Ensured proper positioning over cauldron */}
+              <div className="relative w-full h-full" style={{ overflow: 'visible' }}>
                 {floatingSymbols.map((symbol) => (
                   <div
                     key={symbol.id}
@@ -506,7 +506,8 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                       width: `${symbol.size}px`,
                       height: `${symbol.size}px`,
                       transform: `rotate(${symbol.rotation}deg)`,
-                      opacity: isStirring ? 1 : 0
+                      opacity: isStirring ? 1 : 0,
+                      zIndex: 50
                     }}
                   >
                     <img
@@ -514,7 +515,8 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                       alt={symbol.symbol}
                       className="w-full h-full object-contain"
                       style={{
-                        filter: isStirring ? 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.7))' : 'none'
+                        filter: isStirring ? 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.7))' : 'none',
+                        pointerEvents: 'none'
                       }}
                     />
                   </div>
@@ -590,26 +592,19 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           </div>
         </div>
 
-        {/* Stir Button - Fixed positioning to ensure clickability */}
+        {/* Stir Button - Back in original position with proper z-index */}
         {gameState === 'ready' && (
-          <div style={{ position: 'fixed', bottom: 30, left: 0, right: 0, zIndex: 9998, textAlign: 'center' }}>
+          <div className="text-center mt-8" style={{ position: 'relative', zIndex: 10 }}>
             <button
               onClick={() => {
-                alert('TEST: Button click registered!')
-                console.log('TEST: Button click registered!')
+                console.log('Stir button clicked - starting game')
                 handleStirClick()
               }}
+              className="px-8 py-4 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
               style={{
-                padding: '16px 32px',
                 background: 'linear-gradient(to right, var(--accent-purple), #7c3aed)',
-                color: 'white',
-                fontSize: '20px',
-                fontWeight: 'bold',
-                border: 'none',
-                borderRadius: '8px',
                 cursor: 'pointer',
-                boxShadow: '0 0 15px rgba(0,0,0,0.3)',
-                zIndex: 9999
+                zIndex: 20
               }}
             >
               🥄 STIR (Bet 5 PIE)
