@@ -444,7 +444,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           </div>
         </div>
 
-        {/* Cauldron Display */}
+        {/* Cauldron Display - Redesigned with proper layering */}
         <div 
           className="rounded-xl p-8 mb-8"
           style={{ 
@@ -453,19 +453,18 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             borderWidth: '1px',
             borderStyle: 'solid',
             boxShadow: '0 4px 6px var(--shadow)',
-            position: 'relative',
-            zIndex: 100
+            position: 'relative'
           }}
         >
           <div className="text-center">
-            {/* Cauldron Frame */}
+            {/* Cauldron Frame - Using transform for visual layering */}
             <div 
               className="inline-block relative"
               style={{ 
                 width: '400px',
                 height: '400px',
                 position: 'relative',
-                zIndex: 150
+                transformStyle: 'preserve-3d'
               }}
             >
               {/* Actual Cauldron Image */}
@@ -473,9 +472,10 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                 src="/games/dagdas-cauldron/cauldron.png" 
                 alt="Dagda's Cauldron"
                 className="w-full h-full object-contain"
+                style={{ transform: 'translateZ(0)' }}
               />
               
-              {/* Floating Symbols - Ensured proper positioning over cauldron */}
+              {/* Floating Symbols - Using transform for visual layering */}
               <div className="relative w-full h-full" style={{ overflow: 'visible' }}>
                 {floatingSymbols.map((symbol) => (
                   <div
@@ -486,9 +486,8 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                       top: `${symbol.y - symbol.size/2}px`,
                       width: `${symbol.size}px`,
                       height: `${symbol.size}px`,
-                      transform: `rotate(${symbol.rotation}deg)`,
-                      opacity: isStirring ? 1 : 0,
-                      zIndex: 50
+                      transform: `rotate(${symbol.rotation}deg) translateZ(1px)`,
+                      opacity: isStirring ? 1 : 0
                     }}
                   >
                     <img
