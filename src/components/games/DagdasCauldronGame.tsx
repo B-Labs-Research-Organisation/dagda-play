@@ -572,9 +572,18 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         {gameState === 'ready' && (
           <div className="text-center">
             <button
-              onClick={handleStirClick}
+              onClick={() => {
+                alert('TEST: Button click registered!')
+                console.log('TEST: Button click registered!')
+                handleStirClick()
+              }}
               className="px-8 py-4 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
-              style={{ background: 'linear-gradient(to right, var(--accent-purple), #7c3aed)' }}
+              style={{
+                background: 'linear-gradient(to right, var(--accent-purple), #7c3aed)',
+                cursor: 'pointer',
+                pointerEvents: 'auto',
+                zIndex: 1000
+              }}
             >
               🥄 STIR (Bet 5 PIE)
             </button>
