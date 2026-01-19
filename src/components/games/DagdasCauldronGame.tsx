@@ -121,8 +121,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
   }
 
   const startStirring = () => {
-    if (gameState !== 'ready') return
+    console.log('Stir button clicked! Current gameState:', gameState)
+    
+    if (gameState !== 'ready') {
+      console.log('Game state is not ready, returning')
+      return
+    }
 
+    console.log('Starting stir process...')
+    
     // Get user ID from wallet OR Farcaster
     let userId: string
     let username: string
@@ -130,11 +137,14 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     if (address) {
       userId = address.toLowerCase()
       username = `Player_${address.slice(0, 6)}`
+      console.log('Using wallet user:', userId)
     } else if (farcasterProfile?.fid) {
       userId = `fid-${farcasterProfile.fid}`
       username = farcasterProfile.username || `User-${farcasterProfile.fid}`
+      console.log('Using Farcaster user:', userId)
     } else {
       setMessage('Please connect your wallet or sign in with Farcaster first.')
+      console.log('No user connected')
       return
     }
 
@@ -143,9 +153,12 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     // Check balance first (synchronous check)
     if (balance < 5) {
       setMessage('Insufficient PIE balance! Need at least 5 PIE.')
+      console.log('Insufficient balance:', balance)
       return
     }
 
+    console.log('Starting stirring animation...')
+    
     // Start stirring immediately
     setGameState('stirring')
     setIsStirring(true)
@@ -159,6 +172,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     // Initialize symbols
     const initialSymbols = initializeSymbols()
     setFloatingSymbols(initialSymbols)
+    console.log('Initialized symbols:', initialSymbols.length)
 
     // Animate the cauldron
     const stirDuration = 3000
@@ -166,7 +180,10 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     let stirCount = 0
     const maxStirs = stirDuration / stirInterval
 
+    console.log('Starting stir timer...')
+
     const stirTimer = setInterval(() => {
+      console.log('Stir timer tick:', stirCount)
       setFloatingSymbols(prevSymbols => 
         prevSymbols.map(symbol => ({
           ...symbol,
@@ -180,6 +197,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       stirCount++
 
       if (stirCount >= maxStirs) {
+        console.log('Stir complete, calling finishStirring')
         clearInterval(stirTimer)
         finishStirring()
       }
