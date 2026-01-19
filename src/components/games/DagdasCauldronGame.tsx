@@ -1,18 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAccount } from 'wagmi'
 import { BalanceManager } from '@/lib/BalanceManager'
 import { LimitManager } from '@/lib/LimitManager'
+import { GameEngine, type GameState, type BetMultiplier } from '@/lib/GameEngine'
+import { GameHistoryManager, type GameType } from '@/lib/GameHistoryManager'
+import { type Symbol } from '@/lib/SymbolManager'
 
 interface DagdasCauldronGameProps {
   onComplete: () => void
   balance: number
   farcasterProfile?: { fid?: number; username?: string } | null
 }
-
-type GameState = 'ready' | 'stirring' | 'result' | 'nudge'
-type Symbol = 'harp' | 'club' | 'cauldron' | 'wolfhound' | 'shamrock'
 
 interface FloatingSymbol {
   id: number
@@ -23,52 +23,65 @@ interface FloatingSymbol {
   speed: number
   direction: number
   size: number
+  opacity: number
 }
 
 export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: DagdasCauldronGameProps) {
   const { address } = useAccount()
-  
-  useEffect(() => {
-    console.log('DagdasCauldronGame loaded - address:', address, 'farcasterProfile:', farcasterProfile, 'balance:', balance)
-  }, [address, farcasterProfile, balance])
-  
   const [gameState, setGameState] = useState<GameState>('ready')
   const [isStirring, setIsStirring] = useState(false)
   const [floatingSymbols, setFloatingSymbols] = useState<FloatingSymbol[]>([])
   const [resultSymbols, setResultSymbols] = useState<Symbol[]>([])
-  const [result, setResult] = useState<{ message: string; amount: number; emoji: string; color: string } | null>(null)
   const [newBalance, setNewBalance] = useState(balance)
   const [message, setMessage] = useState('')
-  const [nudgesRemaining, setNudgesRemaining] = useState(1)
-  const [nudgeCost, setNudgeCost] = useState(1)
+  const [betMultiplier, setBetMultiplier] = useState<BetMultiplier>(1)
   const [winningAnimation, setWinningAnimation] = useState(false)
   const [animationFrame, setAnimationFrame] = useState(0)
+  const [userStats, setUserStats] = useState<{ totalPlays: number; totalWins: number; winRate: number }>({ totalPlays: 0, totalWins: 0, winRate: 0 })
+  const [showStats, setShowStats] = useState(false)
 
-  const balanceManager = new BalanceManager()
-  const limitManager = new LimitManager()
+  const gameEngine = useRef(new GameEngine())
+  const balanceManager = useRef(new BalanceManager())
+  const limitManager = useRef(new LimitManager())
+  const historyManager = useRef(new GameHistoryManager())
+  const animationRef = useRef<number | null>(null)
+  const stirAnimationRef = useRef<number | null>(null)
 
-  // Symbol values for payout calculations
-  const symbolValues: Record<Symbol, number> = {
-    harp: 5,
-    club: 3,
-    cauldron: 4,
-    wolfhound: 2,
-    shamrock: 1
-  }
+  // Initialize history manager
+  useEffect(() => {
+    historyManager.current.loadHistory()
+  }, [])
 
-  // Initialize floating symbols
-  const initializeSymbols = () => {
+  // Clean up animations on unmount
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current)
+      if (stirAnimationRef.current) cancelAnimationFrame(stirAnimationRef.current)
+    }
+  }, [])
+
+  // Update user stats when game state changes
+  useEffect(() => {
+    const stats = gameEngine.current.getStats()
+    setUserStats({
+      totalPlays: stats.totalPlays,
+      totalWins: stats.totalWins,
+      winRate: gameEngine.current.getWinRate()
+    })
+  }, [gameState])
+
+  const initializeFloatingSymbols = (count: number = 15): FloatingSymbol[] => {
     const symbols: FloatingSymbol[] = []
     const cauldronWidth = 400
     const cauldronHeight = 300
     const centerX = cauldronWidth / 2
     const centerY = cauldronHeight / 2
-    const symbolsList: Symbol[] = ['harp', 'club', 'cauldron', 'wolfhound', 'shamrock']
+    const allSymbols = gameEngine.current.getAllSymbols()
 
-    for (let i = 0; i < 15; i++) {
-      const angle = (Math.PI * 2 * i) / 15
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count
       const radius = 80 + Math.random() * 40
-      const symbol = symbolsList[Math.floor(Math.random() * symbolsList.length)]
+      const symbol = allSymbols[Math.floor(Math.random() * allSymbols.length)]
       
       symbols.push({
         id: i,
@@ -78,66 +91,20 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         rotation: Math.random() * 360,
         speed: 2 + Math.random() * 3,
         direction: Math.random() > 0.5 ? 1 : -1,
-        size: 40 + Math.random() * 20
+        size: 40 + Math.random() * 20,
+        opacity: 1
       })
     }
     return symbols
   }
 
-  const calculatePayout = (symbols: Symbol[]): { message: string; amount: number; emoji: string; color: string } => {
-    // Check for matches in the result symbols
-    const firstSymbol = symbols[0]
-    const allMatch = symbols.every(symbol => symbol === firstSymbol)
-    const twoMatch = symbols[0] === symbols[1] || symbols[1] === symbols[2] || symbols[0] === symbols[2]
-
-    let totalPayout = 0
-    let message = ''
-    let emoji = ''
-    let color = ''
-
-    if (allMatch) {
-      // All three match - jackpot
-      totalPayout = symbolValues[firstSymbol] * 5
-      message = '🎉 JACKPOT! Dagda smiles upon you!'
-      emoji = '💎'
-      color = 'from-yellow-400 to-yellow-600'
-    } else if (twoMatch) {
-      // Two match
-      const matchingSymbol = symbols.find((symbol, index) => 
-        index < 2 && symbols[index + 1] === symbol
-      ) || symbols[0]
-      totalPayout = symbolValues[matchingSymbol] * 2
-      message = '🎉 Great win! The cauldron overflows!'
-      emoji = '🪙'
-      color = 'from-green-400 to-green-600'
-    } else {
-      // No match
-      message = '😢 No win this time. Try again!'
-      emoji = '💸'
-      color = 'from-orange-400 to-red-500'
-    }
-
-    return {
-      message,
-      amount: totalPayout,
-      emoji,
-      color
-    }
-  }
-
-  const startStirring = () => {
+  const startStirring = async () => {
     try {
-      console.log('startStirring called - current gameState:', gameState)
-      if (gameState !== 'ready') {
-        console.log('Game not in ready state, cannot start stirring')
-        return
-      }
+      if (gameState !== 'ready') return
 
       // Get user ID from wallet OR Farcaster
       let userId: string
       let username: string
-
-      console.log('Checking user authentication - address:', address, 'farcasterProfile:', farcasterProfile)
 
       if (address) {
         userId = address.toLowerCase()
@@ -146,71 +113,45 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         userId = `fid-${farcasterProfile.fid}`
         username = farcasterProfile.username || `User-${farcasterProfile.fid}`
       } else {
-        console.log('No wallet or Farcaster connection found')
         setMessage('Please connect your wallet or sign in with Farcaster first.')
         return
       }
 
-      console.log('User authenticated - userId:', userId)
-
-      // Check balance first (synchronous check)
-      console.log('Checking balance - current balance:', balance)
-      if (balance < 5) {
-        console.log('Insufficient balance')
-        setMessage('Insufficient PIE balance! Need at least 5 PIE.')
+      // Check daily limits
+      const isFarcasterUser = !!farcasterProfile?.fid
+      const limitCheck = await limitManager.current.checkAndUpdateLimit(userId, username, 'dagdas-cauldron', isFarcasterUser)
+      if (!limitCheck.canPlay) {
+        setMessage(`Daily limit reached! Resets in: ${limitCheck.resetsIn}`)
         return
       }
 
-      console.log('Starting stirring process...')
+      // Check balance
+      const betAmount = 5 * betMultiplier
+      if (balance < betAmount) {
+        setMessage(`Insufficient PIE balance! Need at least ${betAmount} PIE for this bet.`)
+        return
+      }
 
-      // Start stirring immediately
+      // Start game
       setGameState('stirring')
       setIsStirring(true)
       setMessage('Stirring Dagda\'s magical cauldron...')
       setWinningAnimation(false)
       setAnimationFrame(0)
-      setNudgesRemaining(1)
-      setNudgeCost(1)
-      setResult(null)
 
       // Initialize symbols
-      const initialSymbols = initializeSymbols()
+      const initialSymbols = initializeFloatingSymbols()
       setFloatingSymbols(initialSymbols)
 
-      console.log('Symbols initialized, starting animation...')
+      // Start the game engine
+      gameEngine.current.startGame(betMultiplier)
+      const result = gameEngine.current.getResult()
+      if (result) {
+        setResultSymbols(result.symbols)
+      }
 
-      // Animate the cauldron
-      const stirDuration = 3000
-      const stirInterval = 50
-      let stirCount = 0
-      const maxStirs = stirDuration / stirInterval
-
-      const stirTimer = setInterval(() => {
-        try {
-          setFloatingSymbols(prevSymbols =>
-            prevSymbols.map(symbol => ({
-              ...symbol,
-              // Spiral movement with random drift
-              x: symbol.x + Math.cos(stirCount * 0.1) * symbol.speed * 0.5 + (Math.random() - 0.5) * 2,
-              y: symbol.y + Math.sin(stirCount * 0.1) * symbol.speed * 0.5 + (Math.random() - 0.5) * 2,
-              rotation: symbol.rotation + symbol.speed * symbol.direction
-            }))
-          )
-
-          stirCount++
-
-          if (stirCount >= maxStirs) {
-            clearInterval(stirTimer)
-            console.log('Animation complete, calling finishStirring')
-            finishStirring()
-          }
-        } catch (error) {
-          console.error('Error in stirring animation:', error)
-          clearInterval(stirTimer)
-          setMessage('Error during stirring animation. Please try again.')
-          setGameState('ready')
-        }
-      }, stirInterval)
+      // Animate stirring
+      animateStirring(initialSymbols)
 
     } catch (error) {
       console.error('Error in startStirring:', error)
@@ -219,26 +160,54 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     }
   }
 
+  const animateStirring = (initialSymbols: FloatingSymbol[]) => {
+    const stirDuration = 3000 // 3 seconds
+    const startTime = Date.now()
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / stirDuration, 1)
+      
+      // Easing function for smooth animation
+      const easeOut = 1 - Math.pow(1 - progress, 3)
+      
+      setFloatingSymbols(prevSymbols =>
+        prevSymbols.map((symbol, index) => {
+          // Spiral movement that slows down
+          const angle = (Math.PI * 2 * index) / prevSymbols.length + progress * 20
+          const radius = 80 + Math.random() * 40
+          const centerX = 200
+          const centerY = 150
+          
+          return {
+            ...symbol,
+            x: centerX + Math.cos(angle) * radius * (1 - easeOut * 0.5),
+            y: centerY + Math.sin(angle) * radius * (1 - easeOut * 0.5),
+            rotation: symbol.rotation + symbol.speed * symbol.direction * (1 - easeOut),
+            opacity: 1 - easeOut // Fade out as symbols settle
+          }
+        })
+      )
+
+      if (progress < 1) {
+        stirAnimationRef.current = requestAnimationFrame(animate)
+      } else {
+        finishStirring()
+      }
+    }
+
+    stirAnimationRef.current = requestAnimationFrame(animate)
+  }
+
   const finishStirring = async () => {
     setIsStirring(false)
     
-    // Generate final result symbols
-    const symbolsList: Symbol[] = ['harp', 'club', 'cauldron', 'wolfhound', 'shamrock']
-    const finalSymbols: Symbol[] = []
-    
-    for (let i = 0; i < 3; i++) {
-      finalSymbols.push(symbolsList[Math.floor(Math.random() * symbolsList.length)])
-    }
-    
-    setResultSymbols(finalSymbols)
-
-    // Calculate payout
-    const finalResult = calculatePayout(finalSymbols)
-    setResult(finalResult)
+    // Get result from game engine
+    const result = gameEngine.current.getResult()
+    if (!result) return
 
     // Update balance
     try {
-      // Get user ID from wallet OR Farcaster
       let userId: string
       let username: string
 
@@ -253,14 +222,28 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         return
       }
 
-      balanceManager.updateBalance(userId, username, finalResult.amount - 5) // Subtract the 5 PIE bet
+      const netWinnings = gameEngine.current.getNetWinnings()
+      await balanceManager.current.updateBalance(userId, username, netWinnings)
         .then((updatedBalance) => {
           setNewBalance(updatedBalance)
           setGameState('nudge')
-          setMessage(finalResult.message)
+          setMessage(result.message)
           
+          // Record game history
+          historyManager.current.addGameEntry({
+            userId,
+            username,
+            gameType: 'dagdas-cauldron' as GameType,
+            timestamp: Date.now(),
+            betAmount: gameEngine.current.getBetAmount(),
+            symbols: result.symbols,
+            winnings: result.amount,
+            netChange: netWinnings,
+            isWin: result.isWin
+          })
+
           // Start winning animation if there's a win
-          if (finalResult.amount > 0) {
+          if (result.isWin) {
             setWinningAnimation(true)
             startWinningAnimation()
           }
@@ -276,18 +259,28 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
   }
 
   const startWinningAnimation = () => {
-    const animationTimer = setInterval(() => {
-      setAnimationFrame(prev => (prev + 1) % 12)
-    }, 100)
-
+    let frame = 0
+    const animate = () => {
+      frame = (frame + 1) % 12
+      setAnimationFrame(frame)
+      if (winningAnimation) {
+        animationRef.current = requestAnimationFrame(animate)
+      }
+    }
+    animationRef.current = requestAnimationFrame(animate)
+    
+    // Stop animation after 3 seconds
     setTimeout(() => {
-      clearInterval(animationTimer)
       setWinningAnimation(false)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        animationRef.current = null
+      }
     }, 3000)
   }
 
   const handleNudge = async (direction: 'left' | 'right') => {
-    if (gameState !== 'nudge' || nudgesRemaining <= 0) return
+    if (gameState !== 'nudge') return
 
     try {
       // Get user ID from wallet OR Farcaster
@@ -306,49 +299,58 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       }
 
       // Check if user can afford the nudge
-      if (balance < nudgeCost) {
-        setMessage(`Insufficient PIE balance! Need ${nudgeCost} PIE for a nudge.`)
+      const nudgeInfo = gameEngine.current.getNudgeInfo()
+      if (balance < nudgeInfo.cost) {
+        setMessage(`Insufficient PIE balance! Need ${nudgeInfo.cost} PIE for a nudge.`)
         return
       }
 
-      setGameState('stirring')
       setMessage(`Nudging the cauldron ${direction}...`)
 
-      // Apply the nudge - change one of the symbols
-      setTimeout(() => {
-        const symbolsList: Symbol[] = ['harp', 'club', 'cauldron', 'wolfhound', 'shamrock']
-        const newSymbols = [...resultSymbols]
-        
-        // Change a random symbol to try to create a match
-        const changeIndex = Math.floor(Math.random() * 3)
-        newSymbols[changeIndex] = symbolsList[Math.floor(Math.random() * symbolsList.length)]
-        
-        setResultSymbols(newSymbols)
+      // Apply nudge
+      const nudgeResult = gameEngine.current.applyNudge(direction)
+      if (!nudgeResult.success) {
+        setMessage('No nudges remaining!')
+        return
+      }
 
-        // Calculate new payout
-        const newResult = calculatePayout(newSymbols)
-        setResult(newResult)
+      // Update symbols display
+      setResultSymbols(nudgeResult.newSymbols)
 
-        // Update balance (subtract nudge cost and add any new winnings)
-        balanceManager.updateBalance(userId, username, newResult.amount - nudgeCost)
-          .then((updatedBalance) => {
-            setNewBalance(updatedBalance)
-            setNudgesRemaining(nudgesRemaining - 1)
-            setNudgeCost(nudgeCost + 1) // Increase cost for next nudge
-            setGameState('result')
-            setMessage(`Nudge applied! ${newResult.message}`)
-            
-            // Start winning animation if there's a win
-            if (newResult.amount > 0) {
-              setWinningAnimation(true)
-              startWinningAnimation()
-            }
+      // Get updated result
+      const result = gameEngine.current.getResult()
+      if (!result) return
+
+      // Update balance (subtract nudge cost)
+      const netChange = result.amount - nudgeResult.cost
+      await balanceManager.current.updateBalance(userId, username, netChange)
+        .then((updatedBalance) => {
+          setNewBalance(updatedBalance)
+          setMessage(`Nudge applied! ${result.message}`)
+          
+          // Update game history with nudge result
+          historyManager.current.addGameEntry({
+            userId,
+            username,
+            gameType: 'dagdas-cauldron' as GameType,
+            timestamp: Date.now(),
+            betAmount: nudgeResult.cost,
+            symbols: result.symbols,
+            winnings: result.amount,
+            netChange: netChange,
+            isWin: result.isWin
           })
-          .catch((error) => {
-            console.error('Error applying nudge:', error)
-            setMessage('Error applying nudge. Please try again.')
-          })
-      }, 1000)
+
+          // Start winning animation if there's a win
+          if (result.isWin) {
+            setWinningAnimation(true)
+            startWinningAnimation()
+          }
+        })
+        .catch((error) => {
+          console.error('Error applying nudge:', error)
+          setMessage('Error applying nudge. Please try again.')
+        })
 
     } catch (error) {
       console.error('Error with nudge:', error)
@@ -356,9 +358,9 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     }
   }
 
-  const handleStirClick = () => {
-    console.log('Stir button clicked - testing click handler')
-    startStirring()
+  const handleBetMultiplier = (multiplier: BetMultiplier) => {
+    setBetMultiplier(multiplier)
+    gameEngine.current.setBetMultiplier(multiplier)
   }
 
   const resetGame = () => {
@@ -366,12 +368,23 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     setIsStirring(false)
     setFloatingSymbols([])
     setResultSymbols([])
-    setResult(null)
     setMessage('')
-    setNudgesRemaining(1)
-    setNudgeCost(1)
     setWinningAnimation(false)
     setAnimationFrame(0)
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current)
+      animationRef.current = null
+    }
+    if (stirAnimationRef.current) {
+      cancelAnimationFrame(stirAnimationRef.current)
+      stirAnimationRef.current = null
+    }
+  }
+
+  const completeGame = () => {
+    gameEngine.current.completeGame()
+    setGameState('complete')
+    setMessage('Game completed! Click Play Again to try your luck once more.')
   }
 
   const backToMain = () => {
@@ -388,41 +401,105 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     shamrock: '⚘'
   }
 
+  const nudgeInfo = gameEngine.current.getNudgeInfo()
+  const canNudge = gameEngine.current.canNudge()
+
   return (
-    <div className="min-h-screen p-8" style={{
+    <div className="min-h-screen p-4 md:p-8" style={{
       backgroundColor: 'var(--background)',
-      backgroundImage: 'none'
+      backgroundImage: 'var(--background-gradient)',
+      color: 'var(--foreground)'
     }}>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-between items-center mb-4">
+        <div className="text-center mb-6 md:mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
             <button
               onClick={backToMain}
-              className="flex items-center gap-2"
-              style={{ color: 'var(--accent-green)' }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+              style={{ 
+                backgroundColor: 'var(--card-bg)',
+                borderColor: 'var(--card-border)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                color: 'var(--accent-green)'
+              }}
             >
               ← Back to Games
             </button>
-            <button
-              onClick={() => window.location.href = '/'}
-              className="flex items-center gap-2"
-              style={{ color: 'var(--accent-green)' }}
-            >
-              🏰 Home
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowStats(!showStats)}
+                className="px-4 py-2 rounded-lg transition-colors"
+                style={{ 
+                  backgroundColor: 'var(--card-bg)',
+                  borderColor: 'var(--card-border)',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  color: 'var(--accent-purple)'
+                }}
+              >
+                📊 Stats
+              </button>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+                style={{ 
+                  backgroundColor: 'var(--card-bg)',
+                  borderColor: 'var(--card-border)',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  color: 'var(--accent-green)'
+                }}
+              >
+                🏰 Home
+              </button>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
             🍲 Dagda's Cauldron
           </h1>
-          <p style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm md:text-base" style={{ color: 'var(--text-muted)' }}>
             Stir the magical cauldron and test your luck with Celtic symbols!
           </p>
         </div>
 
+        {/* Stats Panel */}
+        {showStats && (
+          <div 
+            className="rounded-xl p-4 md:p-6 mb-6"
+            style={{ 
+              backgroundColor: 'var(--card-bg)',
+              borderColor: 'var(--card-border)',
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              boxShadow: '0 4px 6px var(--shadow)'
+            }}
+          >
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-lg font-bold" style={{ color: 'var(--card-text)' }}>{userStats.totalPlays}</div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Total Plays</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold" style={{ color: 'var(--card-text)' }}>{userStats.totalWins}</div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Total Wins</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold" style={{ color: 'var(--card-text)' }}>{userStats.winRate.toFixed(1)}%</div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Win Rate</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold" style={{ color: 'var(--card-text)' }}>{gameEngine.current.getStats().currentStreak}</div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Current Streak</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Balance Display */}
         <div 
-          className="rounded-xl p-6 mb-8"
+          className="rounded-xl p-4 md:p-6 mb-6"
           style={{ 
             backgroundColor: 'var(--card-bg)',
             borderColor: 'var(--card-border)',
@@ -436,18 +513,49 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               Current Balance: {newBalance} PIE
             </div>
             <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-              {gameState === 'ready' && 'Click stir to test your luck!'}
+              {gameState === 'ready' && 'Choose your bet and click stir to play!'}
               {gameState === 'stirring' && 'Stirring the magical cauldron...'}
               {gameState === 'result' && `New Balance: ${newBalance} PIE`}
-              {gameState === 'nudge' && `Nudges remaining: ${nudgesRemaining} (Cost: ${nudgeCost} PIE)`}
+              {gameState === 'nudge' && `Nudges remaining: ${nudgeInfo.remaining} (Cost: ${nudgeInfo.cost} PIE each)`}
+              {gameState === 'complete' && 'Game completed!'}
             </div>
           </div>
         </div>
 
-        {/* COMPLETELY REDESIGNED: Game Board with Proper Layering */}
-        <div
-          className="rounded-xl p-8 mb-8"
-          style={{
+        {/* Bet Multiplier Selection */}
+        {gameState === 'ready' && (
+          <div className="flex justify-center gap-4 mb-6">
+            <button
+              onClick={() => handleBetMultiplier(1)}
+              className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+                betMultiplier === 1 ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              1x (5 PIE)
+            </button>
+            <button
+              onClick={() => handleBetMultiplier(2)}
+              className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+                betMultiplier === 2 ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              2x (10 PIE)
+            </button>
+            <button
+              onClick={() => handleBetMultiplier(5)}
+              className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+                betMultiplier === 5 ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              5x (25 PIE)
+            </button>
+          </div>
+        )}
+
+        {/* Game Board */}
+        <div 
+          className="rounded-xl p-4 md:p-8 mb-6"
+          style={{ 
             backgroundColor: 'var(--card-bg)',
             borderColor: 'var(--card-border)',
             borderWidth: '1px',
@@ -456,16 +564,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             position: 'relative'
           }}
         >
-          {/* Game Board Container - Separate from UI controls */}
           <div className="text-center" style={{ position: 'relative', zIndex: 1 }}>
-            {/* Cauldron Game Area - Isolated stacking context */}
+            {/* Cauldron Game Area */}
             <div
               className="inline-block relative"
               style={{
                 width: '400px',
                 height: '400px',
                 position: 'relative',
-                isolation: 'isolate' // Create new stacking context
+                isolation: 'isolate'
               }}
             >
               {/* Cauldron Base Layer */}
@@ -477,7 +584,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                 />
               </div>
 
-              {/* Symbols Layer - Guaranteed to appear over cauldron */}
+              {/* Symbols Layer */}
               <div
                 className="absolute inset-0"
                 style={{
@@ -500,7 +607,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                       width: `${symbol.size}px`,
                       height: `${symbol.size}px`,
                       transform: `rotate(${symbol.rotation}deg)`,
-                      opacity: isStirring ? 1 : 0
+                      opacity: symbol.opacity
                     }}
                   >
                     <img
@@ -552,55 +659,22 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                   />
                 </div>
               )}
-
-              {/* Cauldron Handle */}
-              <div 
-                className="absolute top-2 left-2 w-8 h-16 rounded-full"
-                style={{
-                  background: 'linear-gradient(to bottom, #d4af37, #8b4513)',
-                  boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)'
-                }}
-              ></div>
-              <div 
-                className="absolute top-2 right-2 w-8 h-16 rounded-full"
-                style={{
-                  background: 'linear-gradient(to bottom, #d4af37, #8b4513)',
-                  boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)'
-                }}
-              ></div>
             </div>
-
-            {/* Result Display */}
-            {result && (
-              <div
-                className="mt-6 p-4 rounded-xl text-center shadow-lg"
-                style={{
-                  background: `linear-gradient(to right, ${result.color.split(' ')[1]}, ${result.color.split(' ')[3]})`
-                }}
-              >
-                <div className="text-4xl mb-2">{result.emoji}</div>
-                <div className="font-bold text-lg" style={{ color: 'white' }}>{result.message}</div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Stir Button - Back in original position with proper z-index */}
+        {/* Stir Button */}
         {gameState === 'ready' && (
-          <div className="text-center mt-8" style={{ position: 'relative', zIndex: 10 }}>
+          <div className="text-center mt-8">
             <button
-              onClick={() => {
-                console.log('Stir button clicked - starting game')
-                handleStirClick()
-              }}
+              onClick={startStirring}
               className="px-8 py-4 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
               style={{
                 background: 'linear-gradient(to right, var(--accent-purple), #7c3aed)',
-                cursor: 'pointer',
-                zIndex: 20
+                cursor: 'pointer'
               }}
             >
-              🥄 STIR (Bet 5 PIE)
+              🥄 STIR (Bet {5 * betMultiplier} PIE)
             </button>
           </div>
         )}
@@ -609,39 +683,32 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         {gameState === 'nudge' && (
           <div className="text-center mt-4">
             <p className="mb-2" style={{ color: 'var(--text-muted)' }}>
-              You have {nudgesRemaining} nudge{nudgesRemaining !== 1 ? 's' : ''} remaining (Cost: {nudgeCost} PIE each)
+              You have {nudgeInfo.remaining} nudge{nudgeInfo.remaining !== 1 ? 's' : ''} remaining (Cost: {nudgeInfo.cost} PIE each)
             </p>
             <div className="flex justify-center gap-4">
               <button
-                onClick={() => {
-                  console.log('Nudge Left button clicked')
-                  handleNudge('left')
-                }}
-                disabled={nudgesRemaining <= 0}
+                onClick={() => handleNudge('left')}
+                disabled={!canNudge}
                 className="px-6 py-3 text-white font-bold rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
-                style={{ cursor: 'pointer', zIndex: 30 }}
+                style={{ cursor: 'pointer' }}
               >
-                🔄 Nudge Left
+                <img src="/games/dagdas-cauldron/nudge-buttons.png" alt="Nudge Left" className="w-6 h-6 inline-block mr-2" />
+                Nudge Left
               </button>
               <button
-                onClick={() => {
-                  console.log('Nudge Right button clicked')
-                  handleNudge('right')
-                }}
-                disabled={nudgesRemaining <= 0}
+                onClick={() => handleNudge('right')}
+                disabled={!canNudge}
                 className="px-6 py-3 text-white font-bold rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
-                style={{ cursor: 'pointer', zIndex: 30 }}
+                style={{ cursor: 'pointer' }}
               >
-                🔄 Nudge Right
+                <img src="/games/dagdas-cauldron/nudge-buttons.png" alt="Nudge Right" className="w-6 h-6 inline-block mr-2 transform rotate-180" />
+                Nudge Right
               </button>
             </div>
             <button
-              onClick={() => {
-                console.log('Finish & Collect button clicked')
-                setGameState('result')
-              }}
+              onClick={completeGame}
               className="mt-4 px-6 py-2 text-white font-bold rounded-lg transition-colors"
-              style={{ backgroundColor: 'var(--accent-green)', cursor: 'pointer', zIndex: 30 }}
+              style={{ backgroundColor: 'var(--accent-green)', cursor: 'pointer' }}
             >
               Finish & Collect
             </button>
@@ -649,14 +716,20 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         )}
 
         {/* Result Message */}
-        {message && !result && (
-          <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300 text-blue-800">
+        {message && (
+          <div className={`text-center p-4 rounded-xl mt-4 ${
+            message.includes('won') || message.includes('JACKPOT') || message.includes('Great win')
+              ? 'bg-green-100 border border-green-300 text-green-800'
+              : message.includes('lost') || message.includes('No win')
+              ? 'bg-red-100 border border-red-300 text-red-800'
+              : 'bg-blue-100 border border-blue-300 text-blue-800'
+          }`}>
             {message}
           </div>
         )}
 
         {/* Play Again Button */}
-        {gameState === 'result' && (
+        {(gameState === 'complete' || gameState === 'result') && (
           <div className="text-center mt-8">
             <button
               onClick={resetGame}
@@ -680,14 +753,14 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         >
           <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--card-text)' }}>🎲 Symbol Values</h3>
           <div className="grid grid-cols-5 gap-2 text-center">
-            {Object.entries(symbolValues).map(([symbol, value]) => (
+            {gameEngine.current.getAllSymbols().map((symbol) => (
               <div key={symbol} className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
                 <img
                   src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
                   alt={symbol}
                   className="w-12 h-12 mx-auto mb-1 object-contain"
                 />
-                <div className="text-xs font-bold" style={{ color: 'var(--card-text)' }}>{value} PIE</div>
+                <div className="text-xs font-bold" style={{ color: 'var(--card-text)' }}>{gameEngine.current.getSymbolValue(symbol)} PIE</div>
               </div>
             ))}
           </div>
@@ -705,11 +778,11 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         >
           <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--card-text)' }}>🎮 How to Play</h3>
           <ul className="space-y-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-            <li>• Bet 5 PIE to stir the cauldron</li>
+            <li>• Bet 5, 10, or 25 PIE to stir the cauldron</li>
             <li>• Watch symbols swirl and settle</li>
             <li>• Match 2 or 3 symbols to win</li>
-            <li>• Use nudges to improve your result</li>
-            <li>• Win up to 25 PIE with the jackpot</li>
+            <li>• Use nudges to improve your result (max 3 per game)</li>
+            <li>• Win up to 125 PIE with the jackpot</li>
             <li>• 20 plays per day (25 for Farcaster users)</li>
           </ul>
         </div>
