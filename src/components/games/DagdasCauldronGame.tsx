@@ -91,7 +91,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         rotation: Math.random() * 360,
         speed: 2 + Math.random() * 3,
         direction: Math.random() > 0.5 ? 1 : -1,
-        size: 40 + Math.random() * 20,
+        size: 60 + Math.random() * 30, // Increased size
         opacity: 1
       })
     }
@@ -161,7 +161,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
   }
 
   const animateStirring = (initialSymbols: FloatingSymbol[]) => {
-    const stirDuration = 3000 // 3 seconds
+    const stirDuration = 5000 // Increased to 5 seconds
     const startTime = Date.now()
     
     const animate = () => {
@@ -174,17 +174,17 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       setFloatingSymbols(prevSymbols =>
         prevSymbols.map((symbol, index) => {
           // Spiral movement that slows down
-          const angle = (Math.PI * 2 * index) / prevSymbols.length + progress * 20
-          const radius = 80 + Math.random() * 40
+          const angle = (Math.PI * 2 * index) / prevSymbols.length + progress * 30 // Faster rotation
+          const radius = 80 + Math.random() * 60 // Larger radius
           const centerX = 200
           const centerY = 150
           
           return {
             ...symbol,
-            x: centerX + Math.cos(angle) * radius * (1 - easeOut * 0.5),
-            y: centerY + Math.sin(angle) * radius * (1 - easeOut * 0.5),
-            rotation: symbol.rotation + symbol.speed * symbol.direction * (1 - easeOut),
-            opacity: 1 - easeOut // Fade out as symbols settle
+            x: centerX + Math.cos(angle) * radius * (1 - easeOut * 0.3), // Less reduction
+            y: centerY + Math.sin(angle) * radius * (1 - easeOut * 0.3), // Less reduction
+            rotation: symbol.rotation + symbol.speed * symbol.direction * (1 - easeOut * 0.5),
+            opacity: 1 - easeOut * 0.7 // Less fade out
           }
         })
       )
@@ -227,7 +227,13 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         .then((updatedBalance) => {
           setNewBalance(updatedBalance)
           setGameState('nudge')
-          setMessage(result.message)
+          
+          // Create enhanced message with win amount
+          let enhancedMessage = result.message
+          if (result.isWin) {
+            enhancedMessage = `${result.message} You won ${result.amount} PIE!`
+          }
+          setMessage(enhancedMessage)
           
           // Record game history
           historyManager.current.addGameEntry({
@@ -326,7 +332,13 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       await balanceManager.current.updateBalance(userId, username, netChange)
         .then((updatedBalance) => {
           setNewBalance(updatedBalance)
-          setMessage(`Nudge applied! ${result.message}`)
+          
+          // Create enhanced message with win amount
+          let enhancedMessage = `Nudge applied! ${result.message}`
+          if (result.isWin) {
+            enhancedMessage = `Nudge applied! ${result.message} You won ${result.amount} PIE!`
+          }
+          setMessage(enhancedMessage)
           
           // Update game history with nudge result
           historyManager.current.addGameEntry({
@@ -624,25 +636,25 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               </div>
 
               {/* Result Symbols */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-6">
                 {resultSymbols.map((symbol, index) => (
                   <div
                     key={index}
-                    className={`w-20 h-20 rounded-lg border-4 flex items-center justify-center transition-all duration-500 ${
+                    className={`w-24 h-24 rounded-lg border-4 flex items-center justify-center transition-all duration-700 ${
                       isStirring ? 'opacity-0 scale-50' : 'opacity-100 scale-100'
                     }`}
                     style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
                       borderColor: '#d4af37',
-                      boxShadow: '0 0 10px rgba(212, 175, 55, 0.5)'
+                      boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)'
                     }}
                   >
                     <img
                       src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
                       alt={symbol}
-                      className="w-16 h-16 object-contain"
+                      className="w-20 h-20 object-contain"
                       style={{
-                        filter: 'drop-shadow(0 0 5px rgba(212, 175, 55, 0.7))'
+                        filter: 'drop-shadow(0 0 8px rgba(212, 175, 55, 0.9))'
                       }}
                     />
                   </div>
