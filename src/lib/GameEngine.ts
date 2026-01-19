@@ -123,24 +123,54 @@ export class GameEngine {
 
   /**
    * Calculate the additional reward from a nudge
-   * Only reward if the result IMPROVED (e.g., none → two-match, two-match → jackpot)
-   * Don't reward if it stayed the same or got worse
+   * Award the FULL amount if the winning symbols changed
+   * Don't reward if the same symbols are still winning (user keeps initial winnings)
    */
   private calculateNudgeReward(previousResult: GameResult, newResult: GameResult): number {
-    // Map win types to numeric levels for comparison
-    const winLevels = { 'none': 0, 'two-match': 1, 'jackpot': 2 };
-    
-    const previousLevel = winLevels[previousResult.winType];
-    const newLevel = winLevels[newResult.winType];
-    
-    // Only reward if the win level IMPROVED
-    if (newLevel > previousLevel) {
-      // Award the difference between new and previous amounts
-      return newResult.amount - previousResult.amount;
+    // If lost after nudge, no reward
+    if (!newResult.isWin) {
+      return 0;
     }
     
-    // No additional reward if same level or worse
+    // Check if the winning symbols changed
+    const previousWinningSymbol = this.getWinningSymbol(previousResult.symbols);
+    const newWinningSymbol = this.getWinningSymbol(newResult.symbols);
+    
+    // If the winning symbol changed, award the FULL new amount
+    // User keeps their initial winnings AND gets the new winnings
+    // Examples:
+    // - 2 Shamrocks (2 PIE kept) → 2 Wolfhounds (4 PIE new) = +4 PIE (total: 6 PIE)
+    // - 2 Harps (10 PIE kept) → 3 Harps (15 PIE new) = +15 PIE (total: 25 PIE)
+    // - No match (0 PIE) → 2 Harps (10 PIE new) = +10 PIE (total: 10 PIE)
+    if (previousWinningSymbol !== newWinningSymbol) {
+      return newResult.amount;
+    }
+    
+    // If the winning symbol stayed the same, no additional reward
+    // User already has their initial winnings, no duplicate payment
+    // Example: 2 Harps + Wolfhound (10 PIE) → 2 Harps + Cauldron (10 PIE) = 0 PIE (same Harps)
     return 0;
+  }
+  
+  /**
+   * Get the winning symbol from a result
+   * For two-match: returns the matching symbol
+   * For jackpot: returns the matching symbol (all 3 are same)
+   * For none: returns null
+   */
+  private getWinningSymbol(symbols: Symbol[]): Symbol | null {
+    // Check for all three matching (jackpot)
+    if (symbols[0] === symbols[1] && symbols[1] === symbols[2]) {
+      return symbols[0];
+    }
+    
+    // Check for two matching
+    if (symbols[0] === symbols[1]) return symbols[0];
+    if (symbols[1] === symbols[2]) return symbols[1];
+    if (symbols[0] === symbols[2]) return symbols[0];
+    
+    // No match
+    return null;
   }
 
   /**
