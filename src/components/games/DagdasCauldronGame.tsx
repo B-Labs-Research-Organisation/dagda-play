@@ -393,6 +393,28 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       backgroundColor: 'var(--background)',
       backgroundImage: 'none'
     }}>
+      {/* DEBUG TEST BUTTON - Fixed position to test basic click functionality */}
+      <div style={{ position: 'fixed', top: 20, left: 20, zIndex: 99999 }}>
+        <button
+          onClick={() => {
+            alert('DEBUG: Test button clicked!')
+            console.log('DEBUG: Test button clicked!')
+          }}
+          style={{
+            padding: '15px 30px',
+            background: 'red',
+            color: 'white',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            boxShadow: '0 0 10px rgba(0,0,0,0.5)'
+          }}
+        >
+          DEBUG TEST BUTTON
+        </button>
+      </div>
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
