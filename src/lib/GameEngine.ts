@@ -27,6 +27,7 @@ export class GameEngine {
   private currentSymbols: Symbol[] = [];
   private currentBetMultiplier: BetMultiplier = 1;
   private currentResult: GameResult | null = null;
+  private initialResult: GameResult | null = null; // Track initial result to prevent duplicate rewards
   private nudgesRemaining: number = 3;
   private nudgeCost: number = 1;
   private gameStats: GameStats = {
@@ -51,6 +52,7 @@ export class GameEngine {
     this.nudgesRemaining = 3;
     this.nudgeCost = 1;
     this.currentResult = null;
+    this.initialResult = null; // Reset initial result
     
     // Generate initial symbols
     const symbolSet = this.symbolManager.generateSymbolSet();
@@ -58,6 +60,9 @@ export class GameEngine {
     
     // Calculate initial result
     this.calculateResult();
+    
+    // Store the initial result for comparison during nudges
+    this.initialResult = { ...this.currentResult! };
     
     // Update stats
     this.updateStats();
@@ -82,10 +87,18 @@ export class GameEngine {
   /**
    * Apply a nudge to the current symbols
    */
-  applyNudge(direction: 'left' | 'middle' | 'right'): { success: boolean; newSymbols: Symbol[]; cost: number } {
+  applyNudge(direction: 'left' | 'middle' | 'right'): { 
+    success: boolean; 
+    newSymbols: Symbol[]; 
+    cost: number;
+    additionalWinnings: number; // Only non-zero if result improved
+  } {
     if (this.nudgesRemaining <= 0) {
-      return { success: false, newSymbols: this.currentSymbols, cost: 0 };
+      return { success: false, newSymbols: this.currentSymbols, cost: 0, additionalWinnings: 0 };
     }
+
+    // Store previous result for comparison
+    const previousResult = { ...this.currentResult! };
 
     // Apply nudge to change one specific symbol based on direction
     const newSymbols = this.symbolManager.applyNudge(this.currentSymbols, direction);
@@ -94,10 +107,40 @@ export class GameEngine {
     // Recalculate result with new symbols
     this.calculateResult();
     
+    // Calculate additional winnings based on improvement
+    const additionalWinnings = this.calculateNudgeReward(previousResult, this.currentResult!);
+    
     // Update nudge state - cost stays at 1 PIE
     this.nudgesRemaining--;
     
-    return { success: true, newSymbols, cost: 1 }; // Cost is always 1 PIE per nudge
+    return { 
+      success: true, 
+      newSymbols, 
+      cost: 1, // Cost is always 1 PIE per nudge
+      additionalWinnings // Only award PIE if result improved
+    };
+  }
+
+  /**
+   * Calculate the additional reward from a nudge
+   * Only reward if the result IMPROVED (e.g., none → two-match, two-match → jackpot)
+   * Don't reward if it stayed the same or got worse
+   */
+  private calculateNudgeReward(previousResult: GameResult, newResult: GameResult): number {
+    // Map win types to numeric levels for comparison
+    const winLevels = { 'none': 0, 'two-match': 1, 'jackpot': 2 };
+    
+    const previousLevel = winLevels[previousResult.winType];
+    const newLevel = winLevels[newResult.winType];
+    
+    // Only reward if the win level IMPROVED
+    if (newLevel > previousLevel) {
+      // Award the difference between new and previous amounts
+      return newResult.amount - previousResult.amount;
+    }
+    
+    // No additional reward if same level or worse
+    return 0;
   }
 
   /**
@@ -158,6 +201,13 @@ export class GameEngine {
   getNetWinnings(): number {
     if (!this.currentResult) return 0;
     return this.currentResult.amount - this.getBetAmount();
+  }
+
+  /**
+   * Get the initial result (before any nudges)
+   */
+  getInitialResult(): GameResult | null {
+    return this.initialResult;
   }
 
   /**

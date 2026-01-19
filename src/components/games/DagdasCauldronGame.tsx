@@ -294,16 +294,21 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       const result = gameEngine.current.getResult()
       if (!result) return
 
-      // Update balance (subtract nudge cost)
-      const netChange = result.amount - nudgeResult.cost
+      // Update balance - only add additional winnings minus nudge cost
+      // This prevents duplicate rewards for the same winning combination
+      const netChange = nudgeResult.additionalWinnings - nudgeResult.cost
       await balanceManager.current.updateBalance(userId, username, netChange)
         .then((updatedBalance) => {
           setNewBalance(updatedBalance)
           
-          // Create enhanced message with win amount
-          let enhancedMessage = `Nudge applied! ${result.message}`
-          if (result.isWin) {
-            enhancedMessage = `Nudge applied! ${result.message} You won ${result.amount} PIE!`
+          // Create enhanced message based on whether result improved
+          let enhancedMessage: string
+          if (nudgeResult.additionalWinnings > 0) {
+            enhancedMessage = `Nudge improved your result! ${result.message} You won an additional ${nudgeResult.additionalWinnings} PIE!`
+          } else if (result.isWin) {
+            enhancedMessage = `Nudge applied! ${result.message} (No improvement - same winning combination)`
+          } else {
+            enhancedMessage = `Nudge applied! ${result.message}`
           }
           setMessage(enhancedMessage)
           
@@ -315,9 +320,9 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             timestamp: Date.now(),
             betAmount: nudgeResult.cost,
             symbols: result.symbols,
-            winnings: result.amount,
+            winnings: nudgeResult.additionalWinnings, // Only record additional winnings
             netChange: netChange,
-            isWin: result.isWin
+            isWin: nudgeResult.additionalWinnings > 0 // Only count as win if it improved
           })
         })
         .catch((error) => {
