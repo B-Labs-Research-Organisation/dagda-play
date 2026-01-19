@@ -123,8 +123,8 @@ export class GameEngine {
 
   /**
    * Calculate the additional reward from a nudge
-   * Award the FULL amount if the winning symbols changed
-   * Don't reward if the same symbols are still winning (user keeps initial winnings)
+   * Award the FULL amount if the winning symbols OR win type changed
+   * Don't reward if the exact same win (symbol + type) is still active
    */
   private calculateNudgeReward(previousResult: GameResult, newResult: GameResult): number {
     // If lost after nudge, no reward
@@ -136,19 +136,21 @@ export class GameEngine {
     const previousWinningSymbol = this.getWinningSymbol(previousResult.symbols);
     const newWinningSymbol = this.getWinningSymbol(newResult.symbols);
     
-    // If the winning symbol changed, award the FULL new amount
-    // User keeps their initial winnings AND gets the new winnings
+    // Award FULL new amount if:
+    // 1. Winning symbol changed (e.g., Shamrocks → Wolfhounds)
+    // 2. Win type changed (e.g., two-match → jackpot with same symbol)
     // Examples:
-    // - 2 Shamrocks (2 PIE kept) → 2 Wolfhounds (4 PIE new) = +4 PIE (total: 6 PIE)
-    // - 2 Harps (10 PIE kept) → 3 Harps (15 PIE new) = +15 PIE (total: 25 PIE)
-    // - No match (0 PIE) → 2 Harps (10 PIE new) = +10 PIE (total: 10 PIE)
-    if (previousWinningSymbol !== newWinningSymbol) {
+    // - 2 Shamrocks (2 PIE kept) → 2 Wolfhounds (4 PIE new) = +4 PIE (symbol changed)
+    // - 2 Wolfhounds (4 PIE kept) → 3 Wolfhounds (10 PIE new) = +10 PIE (type changed: two-match → jackpot)
+    // - 2 Harps (10 PIE kept) → 3 Harps (25 PIE new) = +25 PIE (type changed: two-match → jackpot)
+    // - No match (0 PIE) → 2 Harps (10 PIE new) = +10 PIE (new win)
+    if (previousWinningSymbol !== newWinningSymbol || previousResult.winType !== newResult.winType) {
       return newResult.amount;
     }
     
-    // If the winning symbol stayed the same, no additional reward
+    // If both the winning symbol AND type stayed the same, no additional reward
     // User already has their initial winnings, no duplicate payment
-    // Example: 2 Harps + Wolfhound (10 PIE) → 2 Harps + Cauldron (10 PIE) = 0 PIE (same Harps)
+    // Example: 2 Harps + Wolfhound (10 PIE) → 2 Harps + Cauldron (10 PIE) = 0 PIE (same Harps, same two-match)
     return 0;
   }
   
