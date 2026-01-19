@@ -590,21 +590,26 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           </div>
         </div>
 
-        {/* Stir Button */}
+        {/* Stir Button - Fixed positioning to ensure clickability */}
         {gameState === 'ready' && (
-          <div className="text-center">
+          <div style={{ position: 'fixed', bottom: 30, left: 0, right: 0, zIndex: 9998, textAlign: 'center' }}>
             <button
               onClick={() => {
                 alert('TEST: Button click registered!')
                 console.log('TEST: Button click registered!')
                 handleStirClick()
               }}
-              className="px-8 py-4 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
               style={{
+                padding: '16px 32px',
                 background: 'linear-gradient(to right, var(--accent-purple), #7c3aed)',
+                color: 'white',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                border: 'none',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                pointerEvents: 'auto',
-                zIndex: 1000
+                boxShadow: '0 0 15px rgba(0,0,0,0.3)',
+                zIndex: 9999
               }}
             >
               🥄 STIR (Bet 5 PIE)
