@@ -126,69 +126,97 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
   }
 
   const startStirring = () => {
-    if (gameState !== 'ready') return
-
-    // Get user ID from wallet OR Farcaster
-    let userId: string
-    let username: string
-
-    if (address) {
-      userId = address.toLowerCase()
-      username = `Player_${address.slice(0, 6)}`
-    } else if (farcasterProfile?.fid) {
-      userId = `fid-${farcasterProfile.fid}`
-      username = farcasterProfile.username || `User-${farcasterProfile.fid}`
-    } else {
-      setMessage('Please connect your wallet or sign in with Farcaster first.')
-      return
-    }
-
-    const isFarcasterUser = !!farcasterProfile?.fid
-    
-    // Check balance first (synchronous check)
-    if (balance < 5) {
-      setMessage('Insufficient PIE balance! Need at least 5 PIE.')
-      return
-    }
-
-    // Start stirring immediately
-    setGameState('stirring')
-    setIsStirring(true)
-    setMessage('Stirring Dagda\'s magical cauldron...')
-    setWinningAnimation(false)
-    setAnimationFrame(0)
-    setNudgesRemaining(1)
-    setNudgeCost(1)
-    setResult(null)
-
-    // Initialize symbols
-    const initialSymbols = initializeSymbols()
-    setFloatingSymbols(initialSymbols)
-
-    // Animate the cauldron
-    const stirDuration = 3000
-    const stirInterval = 50
-    let stirCount = 0
-    const maxStirs = stirDuration / stirInterval
-
-    const stirTimer = setInterval(() => {
-      setFloatingSymbols(prevSymbols => 
-        prevSymbols.map(symbol => ({
-          ...symbol,
-          // Spiral movement with random drift
-          x: symbol.x + Math.cos(stirCount * 0.1) * symbol.speed * 0.5 + (Math.random() - 0.5) * 2,
-          y: symbol.y + Math.sin(stirCount * 0.1) * symbol.speed * 0.5 + (Math.random() - 0.5) * 2,
-          rotation: symbol.rotation + symbol.speed * symbol.direction
-        }))
-      )
-
-      stirCount++
-
-      if (stirCount >= maxStirs) {
-        clearInterval(stirTimer)
-        finishStirring()
+    try {
+      console.log('startStirring called - current gameState:', gameState)
+      if (gameState !== 'ready') {
+        console.log('Game not in ready state, cannot start stirring')
+        return
       }
-    }, stirInterval)
+
+      // Get user ID from wallet OR Farcaster
+      let userId: string
+      let username: string
+
+      console.log('Checking user authentication - address:', address, 'farcasterProfile:', farcasterProfile)
+
+      if (address) {
+        userId = address.toLowerCase()
+        username = `Player_${address.slice(0, 6)}`
+      } else if (farcasterProfile?.fid) {
+        userId = `fid-${farcasterProfile.fid}`
+        username = farcasterProfile.username || `User-${farcasterProfile.fid}`
+      } else {
+        console.log('No wallet or Farcaster connection found')
+        setMessage('Please connect your wallet or sign in with Farcaster first.')
+        return
+      }
+
+      console.log('User authenticated - userId:', userId)
+
+      // Check balance first (synchronous check)
+      console.log('Checking balance - current balance:', balance)
+      if (balance < 5) {
+        console.log('Insufficient balance')
+        setMessage('Insufficient PIE balance! Need at least 5 PIE.')
+        return
+      }
+
+      console.log('Starting stirring process...')
+
+      // Start stirring immediately
+      setGameState('stirring')
+      setIsStirring(true)
+      setMessage('Stirring Dagda\'s magical cauldron...')
+      setWinningAnimation(false)
+      setAnimationFrame(0)
+      setNudgesRemaining(1)
+      setNudgeCost(1)
+      setResult(null)
+
+      // Initialize symbols
+      const initialSymbols = initializeSymbols()
+      setFloatingSymbols(initialSymbols)
+
+      console.log('Symbols initialized, starting animation...')
+
+      // Animate the cauldron
+      const stirDuration = 3000
+      const stirInterval = 50
+      let stirCount = 0
+      const maxStirs = stirDuration / stirInterval
+
+      const stirTimer = setInterval(() => {
+        try {
+          setFloatingSymbols(prevSymbols =>
+            prevSymbols.map(symbol => ({
+              ...symbol,
+              // Spiral movement with random drift
+              x: symbol.x + Math.cos(stirCount * 0.1) * symbol.speed * 0.5 + (Math.random() - 0.5) * 2,
+              y: symbol.y + Math.sin(stirCount * 0.1) * symbol.speed * 0.5 + (Math.random() - 0.5) * 2,
+              rotation: symbol.rotation + symbol.speed * symbol.direction
+            }))
+          )
+
+          stirCount++
+
+          if (stirCount >= maxStirs) {
+            clearInterval(stirTimer)
+            console.log('Animation complete, calling finishStirring')
+            finishStirring()
+          }
+        } catch (error) {
+          console.error('Error in stirring animation:', error)
+          clearInterval(stirTimer)
+          setMessage('Error during stirring animation. Please try again.')
+          setGameState('ready')
+        }
+      }, stirInterval)
+
+    } catch (error) {
+      console.error('Error in startStirring:', error)
+      setMessage('An error occurred while starting the game. Please try again.')
+      setGameState('ready')
+    }
   }
 
   const finishStirring = async () => {
