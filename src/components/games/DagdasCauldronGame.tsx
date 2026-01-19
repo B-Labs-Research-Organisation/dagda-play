@@ -393,28 +393,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       backgroundColor: 'var(--background)',
       backgroundImage: 'none'
     }}>
-      {/* DEBUG TEST BUTTON - Fixed position to test basic click functionality */}
-      <div style={{ position: 'fixed', top: 20, left: 20, zIndex: 99999 }}>
-        <button
-          onClick={() => {
-            alert('DEBUG: Test button clicked!')
-            console.log('DEBUG: Test button clicked!')
-          }}
-          style={{
-            padding: '15px 30px',
-            background: 'red',
-            color: 'white',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            boxShadow: '0 0 10px rgba(0,0,0,0.5)'
-          }}
-        >
-          DEBUG TEST BUTTON
-        </button>
-      </div>
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -474,7 +452,9 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             borderColor: 'var(--card-border)',
             borderWidth: '1px',
             borderStyle: 'solid',
-            boxShadow: '0 4px 6px var(--shadow)'
+            boxShadow: '0 4px 6px var(--shadow)',
+            position: 'relative',
+            zIndex: 100
           }}
         >
           <div className="text-center">
@@ -484,7 +464,8 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               style={{ 
                 width: '400px',
                 height: '400px',
-                position: 'relative'
+                position: 'relative',
+                zIndex: 150
               }}
             >
               {/* Actual Cauldron Image */}
@@ -620,24 +601,35 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             </p>
             <div className="flex justify-center gap-4">
               <button
-                onClick={() => handleNudge('left')}
+                onClick={() => {
+                  console.log('Nudge Left button clicked')
+                  handleNudge('left')
+                }}
                 disabled={nudgesRemaining <= 0}
                 className="px-6 py-3 text-white font-bold rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
+                style={{ cursor: 'pointer', zIndex: 30 }}
               >
                 🔄 Nudge Left
               </button>
               <button
-                onClick={() => handleNudge('right')}
+                onClick={() => {
+                  console.log('Nudge Right button clicked')
+                  handleNudge('right')
+                }}
                 disabled={nudgesRemaining <= 0}
                 className="px-6 py-3 text-white font-bold rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
+                style={{ cursor: 'pointer', zIndex: 30 }}
               >
                 🔄 Nudge Right
               </button>
             </div>
             <button
-              onClick={() => setGameState('result')}
+              onClick={() => {
+                console.log('Finish & Collect button clicked')
+                setGameState('result')
+              }}
               className="mt-4 px-6 py-2 text-white font-bold rounded-lg transition-colors"
-              style={{ backgroundColor: 'var(--accent-green)' }}
+              style={{ backgroundColor: 'var(--accent-green)', cursor: 'pointer', zIndex: 30 }}
             >
               Finish & Collect
             </button>
