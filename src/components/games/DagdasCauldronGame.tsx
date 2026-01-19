@@ -635,26 +635,27 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                 ))}
               </div>
 
-              {/* Result Symbols */}
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-6">
+              {/* Result Symbols - Positioned in front with higher z-index */}
+              <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 flex gap-8" style={{ zIndex: 10 }}>
                 {resultSymbols.map((symbol, index) => (
                   <div
                     key={index}
-                    className={`w-24 h-24 rounded-lg border-4 flex items-center justify-center transition-all duration-700 ${
+                    className={`w-28 h-28 rounded-xl border-4 flex items-center justify-center transition-all duration-700 ${
                       isStirring ? 'opacity-0 scale-50' : 'opacity-100 scale-100'
                     }`}
                     style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.98)',
                       borderColor: '#d4af37',
-                      boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)'
+                      boxShadow: '0 0 20px rgba(212, 175, 55, 0.9), 0 0 40px rgba(212, 175, 55, 0.5)',
+                      zIndex: 10
                     }}
                   >
                     <img
                       src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
                       alt={symbol}
-                      className="w-20 h-20 object-contain"
+                      className="w-24 h-24 object-contain"
                       style={{
-                        filter: 'drop-shadow(0 0 8px rgba(212, 175, 55, 0.9))'
+                        filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 1))'
                       }}
                     />
                   </div>
@@ -663,7 +664,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
 
               {/* Winning Animation Overlay */}
               {winningAnimation && (
-                <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
                   <img
                     src={`/games/dagdas-cauldron/win-animation-${String(animationFrame + 1).padStart(2, '0')}.png`}
                     alt="Win Animation"
