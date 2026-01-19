@@ -356,6 +356,11 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     }
   }
 
+  const handleStirClick = () => {
+    console.log('Stir button clicked - testing click handler')
+    startStirring()
+  }
+
   const resetGame = () => {
     setGameState('ready')
     setIsStirring(false)
@@ -567,10 +572,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
         {gameState === 'ready' && (
           <div className="text-center">
             <button
-              onClick={() => {
-                console.log('Stir button clicked - testing click handler')
-                startStirring()
-              }}
+              onClick={handleStirClick}
               className="px-8 py-4 text-white font-bold rounded-lg transition-all transform hover:scale-105 text-xl"
               style={{ background: 'linear-gradient(to right, var(--accent-purple), #7c3aed)' }}
             >
