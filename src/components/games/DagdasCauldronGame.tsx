@@ -27,6 +27,11 @@ interface FloatingSymbol {
 
 export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: DagdasCauldronGameProps) {
   const { address } = useAccount()
+  
+  useEffect(() => {
+    console.log('DagdasCauldronGame loaded - address:', address, 'farcasterProfile:', farcasterProfile, 'balance:', balance)
+  }, [address, farcasterProfile, balance])
+  
   const [gameState, setGameState] = useState<GameState>('ready')
   const [isStirring, setIsStirring] = useState(false)
   const [floatingSymbols, setFloatingSymbols] = useState<FloatingSymbol[]>([])
