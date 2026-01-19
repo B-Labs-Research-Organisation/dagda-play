@@ -82,23 +82,22 @@ export class GameEngine {
   /**
    * Apply a nudge to the current symbols
    */
-  applyNudge(direction: 'left' | 'right'): { success: boolean; newSymbols: Symbol[]; cost: number } {
+  applyNudge(direction: 'left' | 'middle' | 'right'): { success: boolean; newSymbols: Symbol[]; cost: number } {
     if (this.nudgesRemaining <= 0) {
       return { success: false, newSymbols: this.currentSymbols, cost: 0 };
     }
 
-    // Apply nudge to change one random symbol
+    // Apply nudge to change one specific symbol based on direction
     const newSymbols = this.symbolManager.applyNudge(this.currentSymbols, direction);
     this.currentSymbols = newSymbols;
     
     // Recalculate result with new symbols
     this.calculateResult();
     
-    // Update nudge state
+    // Update nudge state - cost stays at 1 PIE
     this.nudgesRemaining--;
-    this.nudgeCost++;
     
-    return { success: true, newSymbols, cost: this.nudgeCost - 1 }; // Return cost of this nudge
+    return { success: true, newSymbols, cost: 1 }; // Cost is always 1 PIE per nudge
   }
 
   /**
@@ -142,7 +141,7 @@ export class GameEngine {
   getNudgeInfo(): { remaining: number; cost: number } {
     return {
       remaining: this.nudgesRemaining,
-      cost: this.nudgeCost
+      cost: 1 // Cost is always 1 PIE per nudge
     };
   }
 

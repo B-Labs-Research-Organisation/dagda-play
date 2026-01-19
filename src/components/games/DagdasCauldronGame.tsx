@@ -35,8 +35,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
   const [newBalance, setNewBalance] = useState(balance)
   const [message, setMessage] = useState('')
   const [betMultiplier, setBetMultiplier] = useState<BetMultiplier>(1)
-  const [winningAnimation, setWinningAnimation] = useState(false)
-  const [animationFrame, setAnimationFrame] = useState(0)
   const [userStats, setUserStats] = useState<{ totalPlays: number; totalWins: number; winRate: number }>({ totalPlays: 0, totalWins: 0, winRate: 0 })
   const [showStats, setShowStats] = useState(false)
 
@@ -44,7 +42,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
   const balanceManager = useRef(new BalanceManager())
   const limitManager = useRef(new LimitManager())
   const historyManager = useRef(new GameHistoryManager())
-  const animationRef = useRef<number | null>(null)
   const stirAnimationRef = useRef<number | null>(null)
 
   // Initialize history manager
@@ -55,7 +52,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
   // Clean up animations on unmount
   useEffect(() => {
     return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current)
       if (stirAnimationRef.current) cancelAnimationFrame(stirAnimationRef.current)
     }
   }, [])
@@ -136,8 +132,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       setGameState('stirring')
       setIsStirring(true)
       setMessage('Stirring Dagda\'s magical cauldron...')
-      setWinningAnimation(false)
-      setAnimationFrame(0)
 
       // Initialize symbols
       const initialSymbols = initializeFloatingSymbols()
@@ -247,12 +241,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             netChange: netWinnings,
             isWin: result.isWin
           })
-
-          // Start winning animation if there's a win
-          if (result.isWin) {
-            setWinningAnimation(true)
-            startWinningAnimation()
-          }
         })
         .catch((error) => {
           console.error('Error updating balance:', error)
@@ -264,28 +252,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     }
   }
 
-  const startWinningAnimation = () => {
-    let frame = 0
-    const animate = () => {
-      frame = (frame + 1) % 12
-      setAnimationFrame(frame)
-      if (winningAnimation) {
-        animationRef.current = requestAnimationFrame(animate)
-      }
-    }
-    animationRef.current = requestAnimationFrame(animate)
-    
-    // Stop animation after 3 seconds
-    setTimeout(() => {
-      setWinningAnimation(false)
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-        animationRef.current = null
-      }
-    }, 3000)
-  }
-
-  const handleNudge = async (direction: 'left' | 'right') => {
+  const handleNudge = async (direction: 'left' | 'middle' | 'right') => {
     if (gameState !== 'nudge') return
 
     try {
@@ -352,12 +319,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             netChange: netChange,
             isWin: result.isWin
           })
-
-          // Start winning animation if there's a win
-          if (result.isWin) {
-            setWinningAnimation(true)
-            startWinningAnimation()
-          }
         })
         .catch((error) => {
           console.error('Error applying nudge:', error)
@@ -381,12 +342,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     setFloatingSymbols([])
     setResultSymbols([])
     setMessage('')
-    setWinningAnimation(false)
-    setAnimationFrame(0)
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current)
-      animationRef.current = null
-    }
     if (stirAnimationRef.current) {
       cancelAnimationFrame(stirAnimationRef.current)
       stirAnimationRef.current = null
@@ -661,17 +616,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                   </div>
                 ))}
               </div>
-
-              {/* Winning Animation Overlay */}
-              {winningAnimation && (
-                <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
-                  <img
-                    src={`/games/dagdas-cauldron/win-animation-${String(animationFrame + 1).padStart(2, '0')}.png`}
-                    alt="Win Animation"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -698,7 +642,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             <p className="mb-2" style={{ color: 'var(--text-muted)' }}>
               You have {nudgeInfo.remaining} nudge{nudgeInfo.remaining !== 1 ? 's' : ''} remaining (Cost: {nudgeInfo.cost} PIE each)
             </p>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4 mb-4">
               <button
                 onClick={() => handleNudge('left')}
                 disabled={!canNudge}
@@ -707,6 +651,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               >
                 <img src="/games/dagdas-cauldron/nudge-buttons.png" alt="Nudge Left" className="w-6 h-6 inline-block mr-2" />
                 Nudge Left
+              </button>
+              <button
+                onClick={() => handleNudge('middle')}
+                disabled={!canNudge}
+                className="px-6 py-3 text-white font-bold rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
+                style={{ cursor: 'pointer' }}
+              >
+                <img src="/games/dagdas-cauldron/nudge-buttons.png" alt="Nudge Middle" className="w-6 h-6 inline-block mr-2 transform rotate-90" />
+                Nudge Middle
               </button>
               <button
                 onClick={() => handleNudge('right')}
@@ -719,11 +672,11 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               </button>
             </div>
             <button
-              onClick={completeGame}
-              className="mt-4 px-6 py-2 text-white font-bold rounded-lg transition-colors"
+              onClick={resetGame}
+              className="px-8 py-3 text-white font-bold rounded-lg transition-colors"
               style={{ backgroundColor: 'var(--accent-green)', cursor: 'pointer' }}
             >
-              Finish & Collect
+              🎮 Play Again
             </button>
           </div>
         )}

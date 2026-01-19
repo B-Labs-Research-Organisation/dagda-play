@@ -22,9 +22,9 @@ export class SymbolManager {
   };
 
   private winProbabilities = {
-    anyWin: 0.30, // 30% chance of any win
-    jackpot: 0.02, // 2% of total games (within win chance)
-    twoMatch: 0.08 // 8% of total games (within win chance)
+    anyWin: 0.25, // 25% chance of any win (reduced from 30%)
+    jackpot: 0.01, // 1% of total games (reduced from 2%)
+    twoMatch: 0.06 // 6% of total games (reduced from 8%)
   };
 
   /**
@@ -170,11 +170,11 @@ export class SymbolManager {
     let emoji = '';
     
     if (allMatch) {
-      // Jackpot: symbol value × 5 × bet multiplier
+      // Triple match: symbol value × 5 × bet multiplier
       amount = this.symbols[firstSymbol].value * 5 * betMultiplier;
       winType = 'jackpot';
-      message = '🎉 JACKPOT! Dagda smiles upon you!';
-      emoji = '💎';
+      message = '✨ Dagda\'s Blessing! The cauldron overflows with fortune!';
+      emoji = '🍀';
     } else if (twoMatch) {
       // Two match: find matching symbol
       const matchingSymbol = symbols.find((symbol, index) => 
@@ -182,23 +182,38 @@ export class SymbolManager {
       ) || symbols[0];
       amount = this.symbols[matchingSymbol].value * 2 * betMultiplier;
       winType = 'two-match';
-      message = '🎉 Great win! The cauldron overflows!';
-      emoji = '🪙';
+      message = '� The harp sings! A fine win from the cauldron!';
+      emoji = '🎵';
     } else {
       // No match
-      message = '😢 No win this time. Try again!';
-      emoji = '💸';
+      message = 'The cauldron bubbles but yields no fortune. Try again!';
+      emoji = '🍲';
     }
     
     return { amount, winType, message, emoji };
   }
 
   /**
-   * Apply a nudge to shift one random symbol
+   * Apply a nudge to shift one specific symbol based on direction
    */
-  applyNudge(symbols: Symbol[], direction: 'left' | 'right'): Symbol[] {
+  applyNudge(symbols: Symbol[], direction: 'left' | 'right' | 'middle'): Symbol[] {
     const newSymbols = [...symbols];
-    const position = Math.floor(Math.random() * 3);
+    
+    // Determine which position to nudge based on direction
+    let position: number;
+    switch (direction) {
+      case 'left':
+        position = 0; // Left symbol
+        break;
+      case 'middle':
+        position = 1; // Middle symbol
+        break;
+      case 'right':
+        position = 2; // Right symbol
+        break;
+      default:
+        position = Math.floor(Math.random() * 3);
+    }
     
     // Get a different symbol for the nudged position
     const currentSymbol = newSymbols[position];
