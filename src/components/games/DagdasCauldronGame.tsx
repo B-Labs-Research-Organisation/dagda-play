@@ -444,10 +444,10 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           </div>
         </div>
 
-        {/* Cauldron Display - Redesigned with proper layering */}
-        <div 
+        {/* COMPLETELY REDESIGNED: Game Board with Proper Layering */}
+        <div
           className="rounded-xl p-8 mb-8"
-          style={{ 
+          style={{
             backgroundColor: 'var(--card-bg)',
             borderColor: 'var(--card-border)',
             borderWidth: '1px',
@@ -456,27 +456,40 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             position: 'relative'
           }}
         >
-          <div className="text-center">
-            {/* Cauldron Frame - Using transform for visual layering */}
-            <div 
+          {/* Game Board Container - Separate from UI controls */}
+          <div className="text-center" style={{ position: 'relative', zIndex: 1 }}>
+            {/* Cauldron Game Area - Isolated stacking context */}
+            <div
               className="inline-block relative"
-              style={{ 
+              style={{
                 width: '400px',
                 height: '400px',
                 position: 'relative',
-                transformStyle: 'preserve-3d'
+                isolation: 'isolate' // Create new stacking context
               }}
             >
-              {/* Actual Cauldron Image */}
-              <img 
-                src="/games/dagdas-cauldron/cauldron.png" 
-                alt="Dagda's Cauldron"
-                className="w-full h-full object-contain"
-                style={{ transform: 'translateZ(0)' }}
-              />
-              
-              {/* Floating Symbols - Using transform for visual layering */}
-              <div className="relative w-full h-full" style={{ overflow: 'visible' }}>
+              {/* Cauldron Base Layer */}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <img
+                  src="/games/dagdas-cauldron/cauldron.png"
+                  alt="Dagda's Cauldron"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              {/* Symbols Layer - Guaranteed to appear over cauldron */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 2,
+                  overflow: 'visible'
+                }}
+              >
                 {floatingSymbols.map((symbol) => (
                   <div
                     key={symbol.id}
@@ -486,7 +499,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                       top: `${symbol.y - symbol.size/2}px`,
                       width: `${symbol.size}px`,
                       height: `${symbol.size}px`,
-                      transform: `rotate(${symbol.rotation}deg) translateZ(1px)`,
+                      transform: `rotate(${symbol.rotation}deg)`,
                       opacity: isStirring ? 1 : 0
                     }}
                   >
