@@ -1,6 +1,3 @@
-import fs from 'fs/promises';
-import path from 'path';
-
 export type GameType = 'dagdas-cauldron' | 'emerald-flip' | 'coinflip' | 'randomizer';
 
 export interface GameHistoryEntry {
@@ -37,50 +34,41 @@ export interface UserStats {
 }
 
 export class GameHistoryManager {
-  private historyFilePath: string;
+  private storageKey = 'dagda-game-history';
   private history: GameHistoryEntry[] = [];
   private userStats: Map<string, UserStats> = new Map();
 
   constructor() {
-    // Store in data directory at project root
-    this.historyFilePath = path.join(process.cwd(), 'data', 'game-history.json');
-    this.ensureDataDirectory();
+    this.loadHistory();
   }
 
   /**
-   * Ensure the data directory exists
+   * Load history from localStorage
    */
-  private async ensureDataDirectory(): Promise<void> {
+  public loadHistory(): void {
     try {
-      const dataDir = path.join(process.cwd(), 'data');
-      await fs.mkdir(dataDir, { recursive: true });
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem(this.storageKey);
+        if (data) {
+          this.history = JSON.parse(data);
+          this.updateStatsFromHistory();
+        }
+      }
     } catch (error) {
-      console.error('Error creating data directory:', error);
-    }
-  }
-
-  /**
-   * Load history from file
-   */
-  async loadHistory(): Promise<void> {
-    try {
-      const data = await fs.readFile(this.historyFilePath, 'utf-8');
-      this.history = JSON.parse(data);
-      this.updateStatsFromHistory();
-    } catch (error) {
-      // File doesn't exist or is invalid, start with empty history
+      console.error('Error loading game history:', error);
       this.history = [];
-      await this.saveHistory();
     }
   }
 
   /**
-   * Save history to file
+   * Save history to localStorage
    */
-  async saveHistory(): Promise<void> {
+  private saveHistory(): void {
     try {
-      const data = JSON.stringify(this.history, null, 2);
-      await fs.writeFile(this.historyFilePath, data, 'utf-8');
+      if (typeof window !== 'undefined') {
+        const data = JSON.stringify(this.history);
+        localStorage.setItem(this.storageKey, data);
+      }
     } catch (error) {
       console.error('Error saving game history:', error);
     }
@@ -95,7 +83,7 @@ export class GameHistoryManager {
     
     this.history.push(fullEntry);
     this.updateUserStats(fullEntry);
-    await this.saveHistory();
+    this.saveHistory();
     
     return id;
   }
@@ -317,7 +305,7 @@ export class GameHistoryManager {
   async clearHistory(): Promise<void> {
     this.history = [];
     this.userStats.clear();
-    await this.saveHistory();
+    this.saveHistory();
   }
 
   /**
