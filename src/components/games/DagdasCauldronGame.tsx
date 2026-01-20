@@ -534,7 +534,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           </div>
         )}
 
-        {/* Game Board */}
+        {/* Game Board with Symbol Legend */}
         <div 
           className="rounded-xl p-4 md:p-8 mb-6"
           style={{ 
@@ -546,10 +546,10 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             position: 'relative'
           }}
         >
-          <div className="text-center" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="flex flex-col md:flex-row gap-6" style={{ position: 'relative', zIndex: 1 }}>
             {/* Cauldron Game Area */}
             <div
-              className="inline-block relative"
+              className="flex-shrink-0"
               style={{
                 width: '400px',
                 height: '400px',
@@ -628,6 +628,25 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                         filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 1))'
                       }}
                     />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Symbol Legend - Vertical on the right */}
+            <div className="flex-shrink-0 w-48">
+              <h3 className="text-lg font-bold mb-3 text-center" style={{ color: 'var(--card-text)' }}>🎲 Symbol Values</h3>
+              <div className="flex flex-col gap-2">
+                {gameEngine.current.getAllSymbols().map((symbol) => (
+                  <div key={symbol} className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
+                    <img
+                      src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
+                      alt={symbol}
+                      className="w-8 h-8 object-contain"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-bold" style={{ color: 'var(--card-text)' }}>{gameEngine.current.getSymbolValue(symbol)} PIE</div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -733,31 +752,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           </div>
         )}
 
-        {/* Symbol Guide */}
-        <div
-          className="mt-12 rounded-xl p-6"
-          style={{
-            backgroundColor: 'var(--card-bg)',
-            borderColor: 'var(--card-border)',
-            borderWidth: '1px',
-            borderStyle: 'solid'
-          }}
-        >
-          <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--card-text)' }}>🎲 Symbol Values</h3>
-          <div className="grid grid-cols-5 gap-2 text-center">
-            {gameEngine.current.getAllSymbols().map((symbol) => (
-              <div key={symbol} className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
-                <img
-                  src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
-                  alt={symbol}
-                  className="w-12 h-12 mx-auto mb-1 object-contain"
-                />
-                <div className="text-xs font-bold" style={{ color: 'var(--card-text)' }}>{gameEngine.current.getSymbolValue(symbol)} PIE</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Game Rules */}
         <div
           className="mt-6 rounded-xl p-6"
@@ -768,7 +762,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             borderStyle: 'solid'
           }}
         >
-          <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--card-text)' }}>🎮 How to Play</h3>
+          <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--card-text)' }}>� How to Play</h3>
           <ul className="space-y-2 text-sm" style={{ color: 'var(--text-muted)' }}>
             <li>• Bet 5, 10, or 25 PIE to stir the cauldron</li>
             <li>• Watch symbols swirl and settle</li>
