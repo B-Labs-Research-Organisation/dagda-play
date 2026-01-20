@@ -504,29 +504,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           </div>
         </div>
 
-        {/* Running Total Display (only shown during nudge phase) */}
-        {gameState === 'nudge' && (
-          <div 
-            className="rounded-xl p-4 md:p-6 mb-6"
-            style={{ 
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              borderColor: 'var(--accent-green)',
-              borderWidth: '2px',
-              borderStyle: 'solid',
-              boxShadow: '0 4px 6px var(--shadow)'
-            }}
-          >
-            <div className="text-center">
-              <div className="text-xl font-bold" style={{ color: 'var(--accent-green)' }}>
-                🎉 Current Round Winnings: {totalWinnings} PIE
-              </div>
-              <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                {nudgeCount > 0 ? `You've nudged ${nudgeCount} time${nudgeCount !== 1 ? 's' : ''} and improved your winnings!` : 'Initial result - try nudging to improve!'}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Bet Multiplier Selection */}
         {gameState === 'ready' && (
           <div className="flex justify-center gap-4 mb-6">
