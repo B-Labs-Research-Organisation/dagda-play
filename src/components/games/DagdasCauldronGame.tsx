@@ -498,11 +498,34 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               {gameState === 'ready' && 'Choose your bet and click stir to play!'}
               {gameState === 'stirring' && 'Stirring the magical cauldron...'}
               {gameState === 'result' && `New Balance: ${newBalance} PIE`}
-              {gameState === 'nudge' && `Running Total: ${runningTotal} PIE | Nudges remaining: ${nudgeInfo.remaining} (Cost: ${nudgeInfo.cost} PIE each)`}
+              {gameState === 'nudge' && `Nudges remaining: ${nudgeInfo.remaining} (Cost: ${nudgeInfo.cost} PIE each)`}
               {gameState === 'complete' && 'Game completed!'}
             </div>
           </div>
         </div>
+
+        {/* Running Total Display (only shown during nudge phase) */}
+        {gameState === 'nudge' && (
+          <div 
+            className="rounded-xl p-4 md:p-6 mb-6"
+            style={{ 
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderColor: 'var(--accent-green)',
+              borderWidth: '2px',
+              borderStyle: 'solid',
+              boxShadow: '0 4px 6px var(--shadow)'
+            }}
+          >
+            <div className="text-center">
+              <div className="text-xl font-bold" style={{ color: 'var(--accent-green)' }}>
+                🎉 Current Round Winnings: {totalWinnings} PIE
+              </div>
+              <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+                {nudgeCount > 0 ? `You've nudged ${nudgeCount} time${nudgeCount !== 1 ? 's' : ''} and improved your winnings!` : 'Initial result - try nudging to improve!'}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Bet Multiplier Selection */}
         {gameState === 'ready' && (
@@ -687,13 +710,15 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               </button>
             </div>
             <div className="flex justify-center gap-4">
-              <button
-                onClick={collectWinnings}
-                className="px-8 py-3 text-white font-bold rounded-lg transition-colors"
-                style={{ backgroundColor: 'var(--accent-purple)', cursor: 'pointer' }}
-              >
-                🏆 Claim Your Bounty
-              </button>
+              {totalWinnings > 0 && (
+                <button
+                  onClick={collectWinnings}
+                  className="px-8 py-3 text-white font-bold rounded-lg transition-colors"
+                  style={{ backgroundColor: 'var(--accent-purple)', cursor: 'pointer' }}
+                >
+                  🏆 Claim Your Bounty ({totalWinnings} PIE)
+                </button>
+              )}
               <button
                 onClick={resetGame}
                 className="px-8 py-3 text-white font-bold rounded-lg transition-colors"
