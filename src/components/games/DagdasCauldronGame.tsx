@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAccount } from 'wagmi'
 import { BalanceManager } from '@/lib/BalanceManager'
 import { LimitManager } from '@/lib/LimitManager'
-import { GameEngine, type GameState, type BetMultiplier } from '@/lib/GameEngine'
+import { GameEngine, type GameState, type BetMultiplier, type GameResult } from '@/lib/GameEngine'
 import { GameHistoryManager, type GameType } from '@/lib/GameHistoryManager'
 import { type Symbol } from '@/lib/SymbolManager'
 
@@ -37,6 +37,11 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
   const [betMultiplier, setBetMultiplier] = useState<BetMultiplier>(1)
   const [userStats, setUserStats] = useState<{ totalPlays: number; totalWins: number; winRate: number }>({ totalPlays: 0, totalWins: 0, winRate: 0 })
   const [showStats, setShowStats] = useState(false)
+  const [runningTotal, setRunningTotal] = useState(0)
+  const [initialResult, setInitialResult] = useState<GameResult | null>(null)
+  const [nudgeCount, setNudgeCount] = useState(0)
+  const [totalWinnings, setTotalWinnings] = useState(0)
+  const [isCollecting, setIsCollecting] = useState(false)
 
   const gameEngine = useRef(new GameEngine())
   const balanceManager = useRef(new BalanceManager())
@@ -196,61 +201,26 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
 
   const finishStirring = async () => {
     setIsStirring(false)
-    
+
     // Get result from game engine
     const result = gameEngine.current.getResult()
     if (!result) return
 
-    // Update balance
-    try {
-      let userId: string
-      let username: string
+    // Store initial result and set up running total
+    setInitialResult(result)
+    setRunningTotal(result.amount)
+    setTotalWinnings(result.amount)
+    setNudgeCount(0)
 
-      if (address) {
-        userId = address.toLowerCase()
-        username = `Player_${address.slice(0, 6)}`
-      } else if (farcasterProfile?.fid) {
-        userId = `fid-${farcasterProfile.fid}`
-        username = farcasterProfile.username || `User-${farcasterProfile.fid}`
-      } else {
-        setMessage('Please connect your wallet or sign in with Farcaster first.')
-        return
-      }
-
-      const netWinnings = gameEngine.current.getNetWinnings()
-      await balanceManager.current.updateBalance(userId, username, netWinnings)
-        .then((updatedBalance) => {
-          setNewBalance(updatedBalance)
-          setGameState('nudge')
-          
-          // Create enhanced message with win amount
-          let enhancedMessage = result.message
-          if (result.isWin) {
-            enhancedMessage = `${result.message} You won ${result.amount} PIE!`
-          }
-          setMessage(enhancedMessage)
-          
-          // Record game history
-          historyManager.current.addGameEntry({
-            userId,
-            username,
-            gameType: 'dagdas-cauldron' as GameType,
-            timestamp: Date.now(),
-            betAmount: gameEngine.current.getBetAmount(),
-            symbols: result.symbols,
-            winnings: result.amount,
-            netChange: netWinnings,
-            isWin: result.isWin
-          })
-        })
-        .catch((error) => {
-          console.error('Error updating balance:', error)
-          setMessage('Error updating balance. Please try again.')
-        })
-    } catch (error) {
-      console.error('Error with balance update:', error)
-      setMessage('An error occurred. Please try again.')
+    // Create enhanced message with win amount
+    let enhancedMessage = result.message
+    if (result.isWin) {
+      enhancedMessage = `${result.message} You won ${result.amount} PIE!`
     }
+    setMessage(enhancedMessage)
+
+    // Move to nudge state without updating balance yet
+    setGameState('nudge')
   }
 
   const handleNudge = async (direction: 'left' | 'middle' | 'right') => {
@@ -295,41 +265,23 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
       const result = gameEngine.current.getResult()
       if (!result) return
 
-      // Update balance - only add additional winnings minus nudge cost
-      // This prevents duplicate rewards for the same winning combination
-      const netChange = nudgeResult.additionalWinnings - nudgeResult.cost
-      await balanceManager.current.updateBalance(userId, username, netChange)
-        .then((updatedBalance) => {
-          setNewBalance(updatedBalance)
-          
-          // Create enhanced message based on whether result improved
-          let enhancedMessage: string
-          if (nudgeResult.additionalWinnings > 0) {
-            enhancedMessage = `Nudge improved your result! ${result.message} You won an additional ${nudgeResult.additionalWinnings} PIE!`
-          } else if (result.isWin) {
-            enhancedMessage = `Nudge applied! ${result.message} (No improvement - same winning combination)`
-          } else {
-            enhancedMessage = `Nudge applied! ${result.message}`
-          }
-          setMessage(enhancedMessage)
-          
-          // Update game history with nudge result
-          historyManager.current.addGameEntry({
-            userId,
-            username,
-            gameType: 'dagdas-cauldron' as GameType,
-            timestamp: Date.now(),
-            betAmount: nudgeResult.cost,
-            symbols: result.symbols,
-            winnings: nudgeResult.additionalWinnings, // Only record additional winnings
-            netChange: netChange,
-            isWin: nudgeResult.additionalWinnings > 0 // Only count as win if it improved
-          })
-        })
-        .catch((error) => {
-          console.error('Error applying nudge:', error)
-          setMessage('Error applying nudge. Please try again.')
-        })
+      // Update running total instead of balance immediately
+      const newRunningTotal = runningTotal + nudgeResult.additionalWinnings
+      const newTotalWinnings = totalWinnings + nudgeResult.additionalWinnings
+      setRunningTotal(newRunningTotal)
+      setTotalWinnings(newTotalWinnings)
+      setNudgeCount(nudgeCount + 1)
+
+      // Create enhanced message based on whether result improved
+      let enhancedMessage: string
+      if (nudgeResult.additionalWinnings > 0) {
+        enhancedMessage = `Nudge improved your result! ${result.message} You won an additional ${nudgeResult.additionalWinnings} PIE!`
+      } else if (result.isWin) {
+        enhancedMessage = `Nudge applied! ${result.message} (No improvement - same winning combination)`
+      } else {
+        enhancedMessage = `Nudge applied! ${result.message}`
+      }
+      setMessage(enhancedMessage)
 
     } catch (error) {
       console.error('Error with nudge:', error)
@@ -358,6 +310,63 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
     gameEngine.current.completeGame()
     setGameState('complete')
     setMessage('Game completed! Click Play Again to try your luck once more.')
+  }
+
+  const collectWinnings = async () => {
+    try {
+      // Get user ID from wallet OR Farcaster
+      let userId: string
+      let username: string
+
+      if (address) {
+        userId = address.toLowerCase()
+        username = `Player_${address.slice(0, 6)}`
+      } else if (farcasterProfile?.fid) {
+        userId = `fid-${farcasterProfile.fid}`
+        username = farcasterProfile.username || `User-${farcasterProfile.fid}`
+      } else {
+        setMessage('Please connect your wallet or sign in with Farcaster first.')
+        return
+      }
+
+      // Calculate total net winnings (winnings minus bet minus nudge costs)
+      const betAmount = gameEngine.current.getBetAmount()
+      const nudgeCosts = nudgeCount * 1 // 1 PIE per nudge
+      const netWinnings = totalWinnings - betAmount - nudgeCosts
+
+      // Update balance with total net winnings
+      await balanceManager.current.updateBalance(userId, username, netWinnings)
+        .then((updatedBalance) => {
+          setNewBalance(updatedBalance)
+          setIsCollecting(true)
+
+          // Record final game history
+          const finalResult = gameEngine.current.getResult()
+          if (finalResult) {
+            historyManager.current.addGameEntry({
+              userId,
+              username,
+              gameType: 'dagdas-cauldron' as GameType,
+              timestamp: Date.now(),
+              betAmount: betAmount + nudgeCosts,
+              symbols: finalResult.symbols,
+              winnings: totalWinnings,
+              netChange: netWinnings,
+              isWin: totalWinnings > 0
+            })
+          }
+
+          setMessage(`🎉 Dagda's bounty collected! You won a total of ${totalWinnings} PIE! Your new balance is ${updatedBalance} PIE.`)
+          setGameState('complete')
+        })
+        .catch((error) => {
+          console.error('Error collecting winnings:', error)
+          setMessage('Error collecting winnings. Please try again.')
+        })
+    } catch (error) {
+      console.error('Error with collecting winnings:', error)
+      setMessage('An error occurred while collecting winnings. Please try again.')
+    }
   }
 
   const backToMain = () => {
@@ -489,7 +498,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               {gameState === 'ready' && 'Choose your bet and click stir to play!'}
               {gameState === 'stirring' && 'Stirring the magical cauldron...'}
               {gameState === 'result' && `New Balance: ${newBalance} PIE`}
-              {gameState === 'nudge' && `Nudges remaining: ${nudgeInfo.remaining} (Cost: ${nudgeInfo.cost} PIE each)`}
+              {gameState === 'nudge' && `Running Total: ${runningTotal} PIE | Nudges remaining: ${nudgeInfo.remaining} (Cost: ${nudgeInfo.cost} PIE each)`}
               {gameState === 'complete' && 'Game completed!'}
             </div>
           </div>
@@ -677,13 +686,22 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
                 Nudge Right
               </button>
             </div>
-            <button
-              onClick={resetGame}
-              className="px-8 py-3 text-white font-bold rounded-lg transition-colors"
-              style={{ backgroundColor: 'var(--accent-green)', cursor: 'pointer' }}
-            >
-              🎮 Play Again
-            </button>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={collectWinnings}
+                className="px-8 py-3 text-white font-bold rounded-lg transition-colors"
+                style={{ backgroundColor: 'var(--accent-purple)', cursor: 'pointer' }}
+              >
+                🏆 Claim Your Bounty
+              </button>
+              <button
+                onClick={resetGame}
+                className="px-8 py-3 text-white font-bold rounded-lg transition-colors"
+                style={{ backgroundColor: 'var(--accent-green)', cursor: 'pointer' }}
+              >
+                🎮 Play Again
+              </button>
+            </div>
           </div>
         )}
 
@@ -754,6 +772,8 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             <li>• Watch symbols swirl and settle</li>
             <li>• Match 2 or 3 symbols to win</li>
             <li>• Use nudges to improve your result (max 3 per game)</li>
+            <li>• Running total accumulates during nudges</li>
+            <li>• Claim your bounty to collect all winnings at once</li>
             <li>• Win up to 125 PIE with the jackpot</li>
             <li>• 20 plays per day (25 for Farcaster users)</li>
           </ul>
