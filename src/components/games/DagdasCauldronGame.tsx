@@ -170,8 +170,9 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           // Spiral movement that slows down
           const angle = (Math.PI * 2 * index) / prevSymbols.length + progress * 30 // Faster rotation
           const radius = 80 + Math.random() * 60 // Larger radius
+          // Center coordinates adjusted to match cauldron center (400x400 container)
           const centerX = 200
-          const centerY = 150
+          const centerY = 200
           
           return {
             ...symbol,
