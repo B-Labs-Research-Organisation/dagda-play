@@ -546,10 +546,10 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             position: 'relative'
           }}
         >
-          <div className="flex flex-col md:flex-row gap-6" style={{ position: 'relative', zIndex: 1 }}>
-            {/* Cauldron Game Area */}
+          <div className="flex flex-col md:flex-row gap-6 items-center" style={{ position: 'relative', zIndex: 1 }}>
+            {/* Cauldron Game Area - Centered */}
             <div
-              className="flex-shrink-0"
+              className="flex-shrink-0 mx-auto md:mx-0"
               style={{
                 width: '400px',
                 height: '400px',
@@ -633,20 +633,18 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               </div>
             </div>
 
-            {/* Symbol Legend - Vertical on the right */}
-            <div className="flex-shrink-0 w-48">
-              <h3 className="text-lg font-bold mb-3 text-center" style={{ color: 'var(--card-text)' }}>🎲 Symbol Values</h3>
-              <div className="flex flex-col gap-2">
+            {/* Symbol Legend - Compact and right-aligned */}
+            <div className="flex-shrink-0 w-32 ml-auto">
+              <h3 className="text-sm font-bold mb-2 text-center" style={{ color: 'var(--card-text)' }}>Symbol Legend</h3>
+              <div className="flex flex-col gap-1">
                 {gameEngine.current.getAllSymbols().map((symbol) => (
-                  <div key={symbol} className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
+                  <div key={symbol} className="flex items-center gap-1 p-1 rounded text-xs" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
                     <img
                       src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
                       alt={symbol}
-                      className="w-8 h-8 object-contain"
+                      className="w-6 h-6 object-contain"
                     />
-                    <div className="flex-1">
-                      <div className="text-sm font-bold" style={{ color: 'var(--card-text)' }}>{gameEngine.current.getSymbolValue(symbol)} PIE</div>
-                    </div>
+                    <span className="font-bold" style={{ color: 'var(--card-text)' }}>{gameEngine.current.getSymbolValue(symbol)}</span>
                   </div>
                 ))}
               </div>
