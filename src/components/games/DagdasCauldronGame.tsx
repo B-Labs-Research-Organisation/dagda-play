@@ -401,17 +401,6 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
               </div>
             </div>
 
-            {/* Game Status */}
-            <div className="info-card-compact">
-              <div className="text-xs text-responsive-sm text-center" style={{ color: 'var(--text-muted)' }}>
-                {gameState === 'ready' && 'Choose bet & stir!'}
-                {gameState === 'stirring' && 'Stirring...'}
-                {gameState === 'result' && `Balance: ${newBalance} PIE`}
-                {gameState === 'nudge' && `Nudges: ${nudgeInfo.remaining}`}
-                {gameState === 'complete' && 'Completed!'}
-              </div>
-            </div>
-
             {/* Stats Toggle & Display */}
             <div className="info-card-compact">
               <button
