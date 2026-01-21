@@ -195,6 +195,7 @@ export class SymbolManager {
 
   /**
    * Apply a nudge to shift one specific symbol based on direction
+   * More sophisticated algorithm with controlled success rates
    */
   applyNudge(symbols: Symbol[], direction: 'left' | 'right' | 'middle'): Symbol[] {
     const newSymbols = [...symbols];
@@ -203,24 +204,78 @@ export class SymbolManager {
     let position: number;
     switch (direction) {
       case 'left':
-        position = 0; // Left symbol
+        position = 0;
         break;
       case 'middle':
-        position = 1; // Middle symbol
+        position = 1;
         break;
       case 'right':
-        position = 2; // Right symbol
+        position = 2;
         break;
       default:
         position = Math.floor(Math.random() * 3);
     }
     
-    // Get a different symbol for the nudged position
     const currentSymbol = newSymbols[position];
-    const differentSymbol = this.generateDifferentSymbol(currentSymbol);
-    newSymbols[position] = differentSymbol;
+    const nudgeOutcome = Math.random();
+    
+    // Sophisticated nudge algorithm with different outcomes:
+    // 20% chance - No change (wasted nudge)
+    // 30% chance - Get a lower value symbol (bad outcome)
+    // 30% chance - Get a random different symbol (unpredictable)
+    // 20% chance - Get a potentially helpful symbol
+    
+    if (nudgeOutcome < 0.20) {
+      // 20% chance: No change - same symbol returns
+      // Player wastes their nudge
+      return newSymbols;
+    } else if (nudgeOutcome < 0.50) {
+      // 30% chance: Get a lower value symbol
+      const lowerValueSymbols = this.getLowerValueSymbols(currentSymbol);
+      if (lowerValueSymbols.length > 0) {
+        newSymbols[position] = lowerValueSymbols[Math.floor(Math.random() * lowerValueSymbols.length)];
+      } else {
+        // If no lower value symbols, get any different symbol
+        newSymbols[position] = this.generateDifferentSymbol(currentSymbol);
+      }
+    } else if (nudgeOutcome < 0.80) {
+      // 30% chance: Get a random different symbol (could be good or bad)
+      newSymbols[position] = this.generateDifferentSymbol(currentSymbol);
+    } else {
+      // 20% chance: Strategic nudge - try to help create a match
+      newSymbols[position] = this.getStrategicSymbol(symbols, position);
+    }
     
     return newSymbols;
+  }
+  
+  /**
+   * Get symbols with lower value than the given symbol
+   */
+  private getLowerValueSymbols(symbol: Symbol): Symbol[] {
+    const currentValue = this.symbols[symbol].value;
+    return (Object.keys(this.symbols) as Symbol[]).filter(
+      s => this.symbols[s].value < currentValue
+    );
+  }
+  
+  /**
+   * Get a strategic symbol that might help create a match
+   * This is only called 20% of the time, making nudges less reliable
+   */
+  private getStrategicSymbol(symbols: Symbol[], positionToChange: number): Symbol {
+    // Look at the other two symbols
+    const otherPositions = [0, 1, 2].filter(i => i !== positionToChange);
+    const otherSymbols = otherPositions.map(i => symbols[i]);
+    
+    // If the other two match, return that symbol (60% of the time)
+    // Otherwise return a random symbol (40% of the time)
+    if (otherSymbols[0] === otherSymbols[1] && Math.random() < 0.6) {
+      return otherSymbols[0];
+    }
+    
+    // 40% of the time, or if other symbols don't match, return a random symbol
+    return this.generateRandomSymbol();
   }
 
   /**

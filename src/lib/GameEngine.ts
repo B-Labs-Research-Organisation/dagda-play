@@ -29,7 +29,7 @@ export class GameEngine {
   private currentResult: GameResult | null = null;
   private initialResult: GameResult | null = null; // Track initial result to prevent duplicate rewards
   private nudgesRemaining: number = 3;
-  private nudgeCost: number = 1;
+  private nudgeCost: number = 2;
   private gameStats: GameStats = {
     totalPlays: 0,
     totalWins: 0,
@@ -50,7 +50,7 @@ export class GameEngine {
   startGame(betMultiplier: BetMultiplier = 1): void {
     this.currentBetMultiplier = betMultiplier;
     this.nudgesRemaining = 3;
-    this.nudgeCost = 1;
+    this.nudgeCost = 2;
     this.currentResult = null;
     this.initialResult = null; // Reset initial result
     
@@ -116,7 +116,7 @@ export class GameEngine {
     return { 
       success: true, 
       newSymbols, 
-      cost: 1, // Cost is always 1 PIE per nudge
+      cost: 2, // Cost is always 2 PIE per nudge
       additionalWinnings // Only award PIE if result improved
     };
   }
@@ -216,7 +216,7 @@ export class GameEngine {
   getNudgeInfo(): { remaining: number; cost: number } {
     return {
       remaining: this.nudgesRemaining,
-      cost: 1 // Cost is always 1 PIE per nudge
+      cost: 2 // Cost is always 2 PIE per nudge
     };
   }
 
