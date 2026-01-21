@@ -52,3 +52,127 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
+
+/* Dagda's Cauldron Game Layout */
+.cauldron-game-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .cauldron-game-container {
+    grid-template-columns: 200px 1fr 200px;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cauldron-game-container {
+    grid-template-columns: 250px 1fr 250px;
+    gap: 2rem;
+  }
+}
+
+/* Cauldron responsive sizing */
+.cauldron-container {
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  position: relative;
+  isolation: isolate;
+}
+
+@media (max-width: 767px) {
+  .cauldron-container {
+    max-width: min(90vw, 350px);
+  }
+}
+
+/* Symbol legend responsive */
+.symbol-legend {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .symbol-legend {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+}
+
+/* Compact info cards */
+.info-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px var(--shadow);
+}
+
+.info-card-compact {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 2px 4px var(--shadow);
+}
+
+/* Game board card */
+.game-board-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  .game-board-card {
+    padding: 1rem;
+  }
+}
+
+/* Responsive text sizing */
+.text-responsive-sm {
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive-sm {
+    font-size: 0.875rem;
+  }
+}
+
+.text-responsive-base {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive-base {
+    font-size: 1rem;
+  }
+}
+
+/* Compact spacing utilities */
+.space-compact > * + * {
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .space-compact > * + * {
+    margin-top: 0.75rem;
+  }
+}
