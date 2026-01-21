@@ -549,7 +549,7 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
           <div className="flex flex-col md:flex-row gap-6 items-center" style={{ position: 'relative', zIndex: 1 }}>
             {/* Cauldron Game Area - Centered */}
             <div
-              className="flex-shrink-0 mx-auto md:mx-0"
+              className="flex-shrink-0 mx-auto"
               style={{
                 width: '400px',
                 height: '400px',
@@ -634,17 +634,17 @@ export function DagdasCauldronGame({ onComplete, balance, farcasterProfile }: Da
             </div>
 
             {/* Symbol Legend - Compact and right-aligned */}
-            <div className="flex-shrink-0 w-32 ml-auto">
+            <div className="flex-shrink-0 w-28 ml-auto">
               <h3 className="text-sm font-bold mb-2 text-center" style={{ color: 'var(--card-text)' }}>Symbol Legend</h3>
               <div className="flex flex-col gap-1">
                 {gameEngine.current.getAllSymbols().map((symbol) => (
-                  <div key={symbol} className="flex items-center gap-1 p-1 rounded text-xs" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
+                  <div key={symbol} className="flex flex-col items-center p-1 rounded" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
                     <img
                       src={`/games/dagdas-cauldron/symbols/${symbol}.png`}
                       alt={symbol}
-                      className="w-6 h-6 object-contain"
+                      className="w-8 h-8 object-contain mb-1"
                     />
-                    <span className="font-bold" style={{ color: 'var(--card-text)' }}>{gameEngine.current.getSymbolValue(symbol)}</span>
+                    <span className="text-xs font-bold" style={{ color: 'var(--card-text)' }}>{gameEngine.current.getSymbolValue(symbol)}</span>
                   </div>
                 ))}
               </div>
